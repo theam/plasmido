@@ -1,0 +1,67 @@
+{
+  "name": "plasmido",
+  "version": "0.0.1",
+  "description": "PlasmIdo",
+  "productName": "PlasmIdo",
+  "author": "Gonzalo García Jaubert <gjaubert@gmail.com>",
+  "private": true,
+  "scripts": {
+    "dev": "quasar dev",
+    "electron-dev": "quasar dev -m electron",
+    "electron-dev-tools": "quasar dev -m electron --devtools",
+    "lint": "eslint --ext .js,.ts,.vue ./",
+    "test": "echo \"No test specified\" && exit 0"
+  },
+  "dependencies": {
+    "@electron/remote": "^1.2.0",
+    "@plasmido/plasmido-schema-registry": "^0.0.1",
+    "@quasar/extras": "^1.10.4",
+    "@types/nedb": "^1.8.11",
+    "@types/socket.io": "^2.1.13",
+    "axios": "^0.21.1",
+    "core-js": "^3.6.5",
+    "express": "^4.17.1",
+    "kafkajs": "^1.15.0",
+    "lodash": "^4.17.21",
+    "mappersmith": "^2.34.0",
+    "nedb": "^1.8.0",
+    "quasar": "^2.0.0-beta.15",
+    "random-words": "^1.1.1",
+    "socket.io": "^4.0.0",
+    "socket.io-client": "^4.0.0",
+    "uuid": "^8.3.2",
+    "winston": "^3.3.3"
+  },
+  "devDependencies": {
+    "@quasar/app": "^3.0.0-beta.19",
+    "@types/lodash": "^4.14.170",
+    "@types/node": "^10.17.15",
+    "@types/random-words": "^1.1.1",
+    "@types/uuid": "^8.3.0",
+    "@typescript-eslint/eslint-plugin": "^4.9.0",
+    "@typescript-eslint/parser": "^4.9.0",
+    "@vue/devtools": "^6.0.0-beta.6",
+    "babel-eslint": "^10.0.1",
+    "electron": "^12.0.1",
+    "electron-packager": "^14.2.1",
+    "eslint": "^7.14.0",
+    "eslint-config-prettier": "^6.15.0",
+    "eslint-plugin-vue": "^7.0.0"
+  },
+  "browserslist": [
+    "last 10 Chrome versions",
+    "last 10 Firefox versions",
+    "last 4 Edge versions",
+    "last 7 Safari versions",
+    "last 8 Android versions",
+    "last 8 ChromeAndroid versions",
+    "last 8 FirefoxAndroid versions",
+    "last 10 iOS versions",
+    "last 5 Opera versions"
+  ],
+  "engines": {
+    "node": ">= 10.18.1",
+    "npm": ">= 6.13.4",
+    "yarn": ">= 1.21.1"
+  }
+}

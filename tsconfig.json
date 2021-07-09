@@ -1,0 +1,8 @@
+{
+  "extends": "@quasar/app/tsconfig-preset",
+  "sourceMap": true,
+  "devtool": "eval-source-map",
+  "compilerOptions": {
+    "baseUrl": "."
+  }
+}
