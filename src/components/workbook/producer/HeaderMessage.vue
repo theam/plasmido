@@ -1,146 +1,176 @@
 <template>
-  <div class="q-pt-md">
-    <q-table
-      title="Treats"
-      :rows="rows"
-      :columns="columns"
-      row-key="name"
-      hide-header
-      hide-bottom
-    />
-  </div>
+  <div class="q-gutter-md">
+    <div class="q-pa-none">
+      <q-table
+          title="Headers"
+          :rows="rows"
+          :columns="columns"
+          row-key="key"
+      >
+        <template v-slot:top-right>
+          <q-btn
+              outline
+              class="q-ml-md"
+              icon-right="add"
+              label="Add"
+              color="primary"
+              :disable="loading"
+              @click="addRow"
+          />
+        </template>
 
+        <template v-slot:body="props">
+          <q-tr :props="props">
+            <q-td key="key" :props="props">
+              {{ props.row.key }}
+            </q-td>
+            <q-td key="value" :props="props">
+              {{ props.row.value }}
+            </q-td>
+            <q-td key="actions" :props="props">
+              <q-btn flat rounded dense size=sm icon="edit" @click="editRow(props.row)"/>
+              <q-btn flat rounded dense size=sm icon="close" @click="deleteRow(props.row)"/>
+            </q-td>
+          </q-tr>
+        </template>
+        <template v-slot:no-data>
+          <div class="full-width row flex-center text-grey-6 q-gutter-sm">
+            Add variables to the environment
+          </div>
+        </template>
+      </q-table>
+    </div>
+  </div>
 </template>
+
 <script lang="ts">
-/* eslint-disable @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-return,@typescript-eslint/restrict-template-expressions */
+import {computed, defineComponent, PropType, ref} from 'vue';
+import {IArtifact} from 'src/interfaces/workbooks/IArtifact';
+import {QDialogOptions, useQuasar} from 'quasar';
+import NewHeaderDialog from 'components/workbook/producer/NewHeaderDialog.vue';
+import {IHeaders} from 'kafkajs';
+import {IHeadersRow} from 'src/interfaces/IHeaderRow';
+
 const columns = [
   {
-    name: 'desc',
+    name: 'key',
     required: true,
-    label: 'Dessert (100g serving)',
+    label: 'key',
+    caption: true,
     align: 'left',
-    field: (row: { name: any }) => row.name,
-    format: (val: any) => `${val}`,
+    field(row: string) {
+      return row;
+    },
+    format(value: string) {
+      return `${value}`
+    },
     sortable: true
   },
-  { name: 'calories', align: 'center', label: 'Calories', field: 'calories', sortable: true },
-  { name: 'fat', label: 'Fat (g)', field: 'fat', sortable: true },
-  { name: 'carbs', label: 'Carbs (g)', field: 'carbs' },
-  { name: 'protein', label: 'Protein (g)', field: 'protein' },
-  { name: 'sodium', label: 'Sodium (mg)', field: 'sodium' },
-  { name: 'calcium', label: 'Calcium (%)', field: 'calcium', sortable: true, sort: (a: string, b: string) => parseInt(a, 10) - parseInt(b, 10) },
-  { name: 'iron', label: 'Iron (%)', field: 'iron', sortable: true, sort: (a: string, b: string) => parseInt(a, 10) - parseInt(b, 10) }
-]
-
-const rows = [
   {
-    name: 'Frozen Yogurt',
-    calories: 159,
-    fat: 6.0,
-    carbs: 24,
-    protein: 4.0,
-    sodium: 87,
-    calcium: '14%',
-    iron: '1%'
+    name: 'value',
+    required: true,
+    label: 'value',
+    caption: true,
+    align: 'left',
+    field(row: string | Buffer | undefined) {
+      return row;
+    },
+    format(value: string) {
+      return `${value}`
+    },
+    sortable: true
   },
   {
-    name: 'Ice cream sandwich',
-    calories: 237,
-    fat: 9.0,
-    carbs: 37,
-    protein: 4.3,
-    sodium: 129,
-    calcium: '8%',
-    iron: '1%'
-  },
-  {
-    name: 'Eclair',
-    calories: 262,
-    fat: 16.0,
-    carbs: 23,
-    protein: 6.0,
-    sodium: 337,
-    calcium: '6%',
-    iron: '7%'
-  },
-  {
-    name: 'Cupcake',
-    calories: 305,
-    fat: 3.7,
-    carbs: 67,
-    protein: 4.3,
-    sodium: 413,
-    calcium: '3%',
-    iron: '8%'
-  },
-  {
-    name: 'Gingerbread',
-    calories: 356,
-    fat: 16.0,
-    carbs: 49,
-    protein: 3.9,
-    sodium: 327,
-    calcium: '7%',
-    iron: '16%'
-  },
-  {
-    name: 'Jelly bean',
-    calories: 375,
-    fat: 0.0,
-    carbs: 94,
-    protein: 0.0,
-    sodium: 50,
-    calcium: '0%',
-    iron: '0%'
-  },
-  {
-    name: 'Lollipop',
-    calories: 392,
-    fat: 0.2,
-    carbs: 98,
-    protein: 0,
-    sodium: 38,
-    calcium: '0%',
-    iron: '2%'
-  },
-  {
-    name: 'Honeycomb',
-    calories: 408,
-    fat: 3.2,
-    carbs: 87,
-    protein: 6.5,
-    sodium: 562,
-    calcium: '0%',
-    iron: '45%'
-  },
-  {
-    name: 'Donut',
-    calories: 452,
-    fat: 25.0,
-    carbs: 51,
-    protein: 4.9,
-    sodium: 326,
-    calcium: '2%',
-    iron: '22%'
-  },
-  {
-    name: 'KitKat',
-    calories: 518,
-    fat: 26.0,
-    carbs: 65,
-    protein: 7,
-    sodium: 54,
-    calcium: '12%',
-    iron: '6%'
+    name: 'actions',
+    label: '',
+    field: 'actions'
   }
-]
-export default {
+];
+
+const addHeaderDialogOptions = (options?: {
+  key?: string | number,
+  value?: string | Buffer | undefined,
+  headers?: IHeaders,
+  inserting?: boolean
+}) => ({
+  component: NewHeaderDialog,
+  componentProps: {
+    headerKey: options?.key,
+    value: options?.value,
+    headers: options?.headers,
+    inserting: options?.inserting
+  }
+} as QDialogOptions);
+
+export default defineComponent({
   name: 'HeaderMessage',
-  setup () {
+  props: {
+    artifact: {type: Object as PropType<IArtifact>, required: true}
+  },
+  setup(props) {
+    const $q = useQuasar();
+    const localArtifact = ref(props.artifact);
+    const loading = ref(false);
+
+    const rows = computed(() => {
+      const result = [] as Array<IHeadersRow>;
+      if (localArtifact.value) {
+        const arrayRows = localArtifact.value.headers || {};
+        Object.keys(arrayRows).forEach((key: keyof IHeaders) => {
+          const value = arrayRows[key] || '';
+          result.push({key: key, value: value});
+        });
+      }
+      return result;
+    });
+
+    const addRow = () => {
+      loading.value = true;
+      if (!localArtifact.value.headers) {
+        localArtifact.value.headers = {};
+      }
+      $q.dialog(addHeaderDialogOptions({headers: localArtifact.value.headers}))
+          .onOk((result: IHeadersRow) => {
+            if (localArtifact.value?.headers) {
+              return localArtifact.value.headers[result.key] = result.value;
+            }
+            return null;
+          })
+          .onDismiss(() => loading.value = false);
+    };
+
+    const editRow = (row: IHeadersRow) => {
+      loading.value = true;
+      $q.dialog(addHeaderDialogOptions({
+        key: row.key,
+        value: row.value,
+        headers: localArtifact.value.headers,
+        inserting: false
+      }))
+          .onOk((result: IHeadersRow) => {
+            if (localArtifact.value?.headers) {
+              delete localArtifact.value.headers[row.key];
+              localArtifact.value.headers[result.key] = result.value;
+            }
+          })
+          .onDismiss(() => loading.value = false);
+    };
+
+    const deleteRow = (row: IHeadersRow) => {
+      if (localArtifact.value?.headers) {
+        confirm('Are you sure you want to delete this item?') && delete localArtifact.value.headers[row.key];
+      }
+    };
+
     return {
+      localArtifact,
+      loading,
       columns,
-      rows
+      rows,
+      addRow,
+      editRow,
+      deleteRow
     }
   }
-}
+});
 </script>

@@ -18,7 +18,6 @@ export const insert = async (broker: IBroker) => {
   return await database.asyncInsert(brokersDatabase, query) as IBroker;
 };
 
-// TODO remove update and rename this one to update
 export const updateSimple = async(currentBroker: IBroker) => {
   const query = {_id: currentBroker._id || ''};
   const updateQuery = {
@@ -66,6 +65,10 @@ export const findOne = async (id: string) => {
 
 export const findAll = async () => {
   return await database.asyncFindAllBy(brokersDatabase, {}, {createdAt: 1}) as Array<IBroker>;
+};
+
+export const remove = async (brokerUUID: string) => {
+  void await database.asyncRemove(brokersDatabase, {uuid: brokerUUID});
 };
 
 export const removeAll = async () => {

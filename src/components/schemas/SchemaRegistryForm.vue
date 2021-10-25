@@ -8,14 +8,22 @@
   <div class="q-gutter-md" style="max-width: 600px">
     <div class="row items-end justify-between">
       <div class="col-11">
-        <q-tabs dense v-model="tab" inline-label no-caps>
-          <q-tab name="config" icon="mail" label="Config"/>
-          <q-tab name="schemas" icon="movie" label="Schemas"/>
+        <q-tabs
+          indicator-color="transparent"
+          active-color="primary"
+          inline-label
+          dense
+          align="left"
+          no-caps
+          v-model="tab"
+        >
+          <q-tab name="config" label="Configuration"/>
+          <q-tab name="schemas" label="Schemas"/>
         </q-tabs>
       </div>
     </div>
   </div>
-
+  <q-separator/>
   <q-tab-panels v-model="tab" animated class="bg-grey-1">
     <q-tab-panel name="config">
       <SchemaRegistryConfig

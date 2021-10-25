@@ -65,6 +65,7 @@ export const findOne = async (id: string) => {
 };
 
 export const removeAll = async () => {
-  return await database.asyncRemove(executionsWorkbookDatabase, {});
+  await database.asyncRemove(executionsWorkbookDatabase, {});
+  return true;
 };
 

@@ -1,31 +1,13 @@
 import {ArtifactType} from 'app/src/enums/ArtifactType';
+import {IHeaders} from 'kafkajs';
+import {ConsumeFromType} from 'src/enums/ConsumeFromType';
+import {ArtifactSchemaType} from 'src/enums/ArtifactSchemaType';
+import {ArtifactTextFormat} from 'src/enums/ArtifactTextFormat';
 
 export interface IArtifactPayloadSchema {
   schemaRegistryId?: string,
   schemaSubject?: string,
   schemaId?: number
-}
-
-export enum ArtifactSchemaType {
-  PLAIN = 'PLAIN',
-  AVRO = 'AVRO',
-  JSON = 'JSON'
-}
-
-export enum ArtifactSchemaTypeDescription {
-  PLAIN = 'Plain',
-  AVRO = 'Avro Schema',
-  JSON = 'Json Schema'
-}
-
-export enum ArtifactTextFormat {
-  PLAIN='PLAIN',
-  JSON='JSON'
-}
-
-export enum ArtifactTextFormatDescription {
-  PLAIN='Plain',
-  JSON='Json'
 }
 
 export interface IArtifact {
@@ -34,9 +16,12 @@ export interface IArtifact {
   type: ArtifactType,
   brokerId: string,
   topicName: string,
+  headers?: IHeaders,
   payload?: string,
   schemaType: ArtifactSchemaType,
+  consumeFrom: ConsumeFromType,
   textFormat: ArtifactTextFormat,
   payloadSchema: IArtifactPayloadSchema,
-  repeatTimes?: number
+  repeatTimes: number,
+  batchSize: number
 }

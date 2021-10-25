@@ -29,7 +29,12 @@
               </q-item-section>
               <q-item-section top side>
                 <div class="text-grey-8 q-gutter-xs">
-                  <q-btn class="gt-xs" size="12px" flat dense round icon="more_vert"/>
+                  <BasicOptions
+                    :on-clone="onCloneSchemaRegistry"
+                    :on-delete="onDeleteSchemaRegistry"
+                    :value="item.uuid"
+                    class="col-1"
+                  />
                 </div>
               </q-item-section>
             </q-item>
@@ -48,11 +53,27 @@
 import {computed, defineComponent, ref} from 'vue'
 import useSchemaRegistryRepository from 'src/composables/useSchemaRegistryRepository';
 import ISchemaRegistryTreeItem from 'src/interfaces/trees/ISchemaRegistryTreeItem';
+import {useRouter} from 'vue-router';
+import {QDialogOptions, useQuasar} from 'quasar';
+import ConfirmDialog from 'components/ConfirmDialog.vue';
+import BasicOptions from 'components/workbook/artifact/BasicOptions.vue';
+
+const confirmDeleteDialogOptions = () => ({
+  component: ConfirmDialog,
+  componentProps: {
+    title: 'Confirm delete',
+    description: 'Do you want to delete this schema registry?'
+  }
+} as QDialogOptions);
 
 export default defineComponent({
   name: 'SchemaRegistryTree',
+  components: {BasicOptions},
   setup() {
-    const {schemasRegistries} = useSchemaRegistryRepository();
+    const router = useRouter();
+    const $q = useQuasar();
+
+    const {schemasRegistries, cloneSchemaRegistry, deleteSchemaRegistry} = useSchemaRegistryRepository();
 
     const schemasRegistriesItems = computed(() =>
       schemasRegistries.value.map(value => {
@@ -61,13 +82,28 @@ export default defineComponent({
           to: '/registries/' + id,
           name: value.name,
           url: value.url,
-          securityProtocol: value.securityProtocol
+          securityProtocol: value.securityProtocol,
+          uuid: value.uuid
         } as ISchemaRegistryTreeItem;
       }));
 
+    const onCloneSchemaRegistry = async (schemaRegistryUUID: string) => {
+      const newId = await cloneSchemaRegistry(schemaRegistryUUID);
+      await router.push({name: 'registry_path', params: {id: newId}});
+    }
+
+    const onDeleteSchemaRegistry = (schemaRegistryUUID: string) => {
+      $q.dialog(confirmDeleteDialogOptions())
+        .onOk(async () => {
+          await deleteSchemaRegistry(schemaRegistryUUID);
+          await router.push({name: 'empty_registry_path'});
+        });
+    };
     return {
       splitterModel: ref(25),
-      schemasRegistriesItems
+      schemasRegistriesItems,
+      onDeleteSchemaRegistry,
+      onCloneSchemaRegistry
     }
   }
 });

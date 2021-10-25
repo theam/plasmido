@@ -1,5 +1,5 @@
 <template>
-  <q-form @reset="resetConnection" class="q-gutter-sm">
+  <q-form @reset="refreshTopics" class="q-gutter-sm">
     <div class="q-py-none">
       <q-table
         grid
@@ -11,29 +11,42 @@
         hide-header
         no-data-label="No topics"
         separator="none"
-        :selection="selectable"
-        @selection="selectTopic"
-        v-model:selected="selected"
       >
 
         <template v-slot:top-right>
-          <q-input borderless dense debounce="300" v-model="filter" placeholder="Search">
+          <q-input
+            dense
+            debounce="300"
+            v-model="filter"
+            placeholder="Search"
+          >
             <template v-slot:append>
-
               <q-icon name="search"/>
-              <q-btn outline round dense icon="refresh" class="q-ml-md" type="reset"/>
-              <q-btn round dense icon="add" class="q-ml-md" color="primary" @click="openAddTopic"/>
             </template>
           </q-input>
+          <q-btn
+            outline
+            class="q-ml-md"
+            icon-right="refresh"
+            label="Refresh"
+            type="reset"
+            @click="refreshTopics"
+          />
+          <q-btn
+            outline
+            class="q-ml-md"
+            icon-right="add"
+            label="Add"
+            color="primary"
+            @click="openAddTopic"
+          />
         </template>
 
         <template v-slot:item="props">
           <div class="q-pa-xs row col-12 items-start q-gutter-md grid-style-transition"
-               :style="props.selected ? 'transform: scale(0.99);' : ''"
                :props="props"
-               @click="props.selected = !props.selected"
           >
-            <q-card class="my-card" :class="props.selected ? 'bg-grey-2' : ''" >
+            <q-card class="my-card">
               <q-card-section>
                 <div class="row no-wrap q-pt-sm q-pb-none items-center">
                   <div class="col text-subtitle2">
@@ -45,7 +58,13 @@
 
               <div v-if="showDetails">
                 <q-card-actions>
-                  <q-btn dense flat size="md" icon="o_delete"/>
+                  <q-btn
+                    dense
+                    flat
+                    size="md"
+                    icon="o_delete"
+                    @click="deleteTopics(props.row.name)"
+                  />
                   <q-space/>
                   <q-btn
                     color="grey"
@@ -117,12 +136,11 @@
 </template>
 
 <script lang="ts">
-import {computed, defineComponent, onMounted, PropType, ref, watch} from 'vue';
+import {defineComponent, onMounted, PropType, ref, watch} from 'vue';
 import {useQuasar} from 'quasar';
 import useAdminRepository from 'src/composables/useAdminRepository';
 import {IBroker} from 'src/interfaces/broker/IBroker';
 import {IDataTopic} from 'app/src-electron/interfaces/topic/IDataTopic';
-import {cloneDeep} from 'lodash';
 
 const topicCreatedNotifyOptions = () => ({
   color: 'green-4',
@@ -154,11 +172,9 @@ export default defineComponent({
   name: 'TopicList',
   props: {
     broker: {type: Object as PropType<IBroker>, required: true},
-    selectedTopic: {type: String},
     showDetails: {type: Boolean, default: true}
   },
-  emits: ['selectedTopicChanged'],
-  setup(props, context) {
+  setup(props) {
     const $q = useQuasar();
     const columns = [
       {
@@ -171,7 +187,6 @@ export default defineComponent({
         }
       }
     ];
-    const selected = ref([{name: props.selectedTopic || ''}]);
 
     const {
       topics,
@@ -180,6 +195,7 @@ export default defineComponent({
       findAllTopics,
       findAllMetadata,
       saveTopic,
+      deleteTopic,
       resetConnection
     } = useAdminRepository();
 
@@ -207,14 +223,21 @@ export default defineComponent({
         .onOk((topicName: string) => void saveTopic(props.broker, topicName));
     };
 
-    const selectTopic = (value: any) => {
-      if (value) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        return context.emit('selectedTopicChanged', value?.keys[0]);
-      }
+    const deleteTopics = (value: string) => {
+      $q.dialog({
+        title: 'Confirm',
+        message: 'Are you sure to delete topic....?',
+        ok: 'Delete',
+        cancel: true,
+        persistent: true
+      })
+        .onOk(() => void deleteTopic(props.broker, [value]));
     };
 
-    const selectable = computed(() => props.showDetails ? 'none' : 'single');
+    const refreshTopics = async () => {
+      resetConnection();
+      await loadTopics();
+    }
 
     return {
       topics,
@@ -222,9 +245,8 @@ export default defineComponent({
       filter: ref(''),
       resetConnection,
       openAddTopic,
-      selectTopic,
-      selected,
-      selectable
+      deleteTopics,
+      refreshTopics
     }
   }
 });

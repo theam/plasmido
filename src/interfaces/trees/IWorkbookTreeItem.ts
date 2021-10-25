@@ -3,5 +3,6 @@ export default interface IWorkbookTreeItem {
   name: string,
   producersSize: number,
   consumersSize: number
-  icon: string
+  icon: string,
+  uuid: string
 }

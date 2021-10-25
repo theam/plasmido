@@ -2,6 +2,7 @@ import {SchemaRegistrySecurityProtocol} from 'src/enums/SchemaRegistrySecurityPr
 
 export interface ISchemaRegistry {
   _id: string,
+  uuid: string,
   name: string,
   url: string,
   securityProtocol: SchemaRegistrySecurityProtocol,

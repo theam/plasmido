@@ -1,7 +1,9 @@
-import {EachMessagePayload} from 'kafkajs';
+import {EachMessagePayload, IHeaders} from 'kafkajs';
 
 export interface IConsumedEvent {
+  _id: string,
   eachMessagePayload:EachMessagePayload
   artifactUUID: string,
-  avroDecodedMessage?: string
+  plainMessage?: string,
+  plainHeaders?: IHeaders
 }

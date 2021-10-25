@@ -4,5 +4,6 @@ export default interface IClusterTreeItem {
   to: string,
   name: string,
   url: string,
-  protocol: BrokerProtocol
+  protocol: BrokerProtocol,
+  uuid: string
 }

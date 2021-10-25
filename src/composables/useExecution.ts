@@ -10,21 +10,21 @@ import {IExecutionStart} from 'src/interfaces/executions/IExecutionStart';
 import {IExecutionArtifact} from 'src/interfaces/executions/IExecutionArtifact';
 import {cloneDeep} from 'lodash';
 import {IConsumedEvent} from 'src/interfaces/IConsumedEvent';
-import {IProducedEvent} from 'src/interfaces/IProducedEvent';
+import {IProducedEventCount} from 'src/interfaces/IProducedEventCount';
+import {IConsumedEventCount} from 'src/interfaces/IConsumedEventCount';
+import {IConsumedEventElement} from 'src/interfaces/IConsumedEventElement';
+import {IProducedEventElement} from 'src/interfaces/IProducedEventElement';
 
 const PLASMIDO_VUE_USE_EXECUTIONS = 'PLASMIDO_VUE_USE:useExecutions';
 
 
 export default function useExecution() {
   const socket = getSocket();
-  // const currentWorkbookUUID = ref('');
   const currentExecutionStatus = ref(WorkBookStatus.STOPPED as WorkBookStatus);
   const currentExecutionWorkbook = ref(null as null | IExecutionWorkbook);
   const currentExecutionArtifacts = ref([] as Array<IExecutionArtifact>);
-  const producedEvents = ref([] as Array<IProducedEvent>);
-  const consumedEvents = ref([] as Array<IConsumedEvent>);
-  const totalConsumed = ref(0);
-  const totalProduced = ref(0);
+  const producedEventsCount = ref([] as Array<IProducedEventCount>);
+  const consumedEventsCount = ref([] as Array<IConsumedEventCount>);
 
   const listenersOff = () => {
     socket.off(Events.PLASMIDO_OUTPUT_PRODUCER_PRODUCED_EVENT);
@@ -32,17 +32,33 @@ export default function useExecution() {
     console.info(PLASMIDO_VUE_USE_EXECUTIONS, ':listenersOff:DONE:');
   };
 
-  const eventProduced = (data: IProducedEvent) => {
+  const eventProduced = (data: IProducedEventElement) => {
     if (data !== null) {
-      totalProduced.value += 1;
-      producedEvents.value.push({...data});
+      if (producedEventsCount.value && producedEventsCount.value.length > 0) {
+        const count = producedEventsCount.value.find(value => value.artifactUUID === data.artifactUUID);
+        if (count) {
+          count.size += data.size;
+        } else {
+          producedEventsCount.value.push({size: 1, artifactUUID: data.artifactUUID});
+        }
+      } else {
+        producedEventsCount.value.push({size: data.size, artifactUUID: data.artifactUUID});
+      }
     }
   };
 
-  const eventConsumed = (data: IConsumedEvent) => {
+  const eventConsumed = (data: IConsumedEventElement) => {
     if (data !== null) {
-      totalConsumed.value += 1;
-      consumedEvents.value.push({...data});
+      if (consumedEventsCount.value && consumedEventsCount.value.length > 0) {
+        const count = consumedEventsCount.value.find(value => value.artifactUUID === data.artifactUUID);
+        if (count) {
+          count.size += 1;
+        } else {
+          consumedEventsCount.value.push({size: 1, artifactUUID: data.artifactUUID});
+        }
+      } else {
+        consumedEventsCount.value.push({size: 1, artifactUUID: data.artifactUUID});
+      }
     }
   };
 
@@ -58,10 +74,10 @@ export default function useExecution() {
         currentExecutionStatus.value = WorkBookStatus.STOPPED;
       }
     });
-    socket.on(Events.PLASMIDO_OUTPUT_PRODUCER_PRODUCED_EVENT, (data: IProducedEvent) => {
+    socket.on(Events.PLASMIDO_OUTPUT_PRODUCER_PRODUCED_EVENT, (data: IProducedEventElement) => {
       eventProduced(data);
     });
-    socket.on(Events.PLASMIDO_OUTPUT_CONSUMER_CONSUMED_EVENT, (data: IConsumedEvent) => {
+    socket.on(Events.PLASMIDO_OUTPUT_CONSUMER_CONSUMED_EVENT, (data: IConsumedEventElement) => {
       eventConsumed(data);
     });
   }
@@ -72,13 +88,11 @@ export default function useExecution() {
 
   onUnmounted(() => {
     restartExecutionStatus();
-    restartExecutionsCount()
     listenersOff();
   });
 
   const startWorkbook = async (workbook: IWorkbook) => {
     restartExecutionStatus();
-    restartExecutionsCount();
     workbook.action = WorkBookActions.RUN;
     workbook.status = WorkBookStatus.STOPPED;
     const execution = await syncEmit(Events.PLASMIDO_INPUT_WORKBOOK_START_SYNC, workbook) as IExecutionStart;
@@ -93,35 +107,47 @@ export default function useExecution() {
     const newWorkbook = cloneDeep(workbook);
     newWorkbook.action = WorkBookActions.STOP;
     currentExecutionStatus.value = WorkBookStatus.STOPPING;
-    const execution = await syncEmit(Events.PLASMIDO_INPUT_WORKBOOK_STOP_SYNC, newWorkbook) as IExecutionWorkbook;
-    currentExecutionWorkbook.value = execution;
+    currentExecutionWorkbook.value = await syncEmit(Events.PLASMIDO_INPUT_WORKBOOK_STOP_SYNC, newWorkbook) as IExecutionWorkbook;
     currentExecutionStatus.value = WorkBookStatus.STOPPED;
-    // restartExecutionStatus();
   }
 
   const restartExecutionStatus = () => {
     currentExecutionWorkbook.value = null;
     currentExecutionArtifacts.value.length = 0;
-    consumedEvents.value.length = 0;
-    producedEvents.value.length = 0;
+    producedEventsCount.value.length = 0;
+    consumedEventsCount.value.length = 0;
     currentExecutionStatus.value = WorkBookStatus.STOPPED;
   }
 
-  const restartExecutionsCount = () => {
-    totalProduced.value = 0;
-    totalConsumed.value = 0;
+  const truncateExecutions = async () => {
+    return await syncEmit(Events.PLASMIDO_INPUT_EXECUTIONS_TRUNCATE) as boolean;
   }
+
+  const getConsumedCountByArtifact = async (artifactUUID: string, filter: string) => {
+    return await syncEmit(Events.PLASMIDO_INPUT_EXECUTIONS_CONSUMED_COUNT, {artifactUUID, filter}) as number;
+  }
+
+  const getConsumedByArtifact = async (artifactUUID: string, filter: string, startRow: number, count: number) => {
+    return await syncEmit(Events.PLASMIDO_INPUT_EXECUTIONS_CONSUMED, {
+      artifactUUID,
+      filter,
+      startRow,
+      count
+    }) as Array<IConsumedEvent>;
+  }
+
 
   return {
     currentExecutionStatus,
     currentExecutionWorkbook,
     currentExecutionArtifacts,
-    consumedEvents,
-    producedEvents,
-    totalConsumed,
-    totalProduced,
+    consumedEventsCount,
+    producedEventsCount,
     startWorkbook,
-    stopWorkbook
+    stopWorkbook,
+    truncateExecutions,
+    getConsumedByArtifact,
+    getConsumedCountByArtifact
   }
 
 }

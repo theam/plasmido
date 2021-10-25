@@ -1,22 +1,26 @@
 import {cloneDeep} from 'lodash';
 import {ISchemaRegistry} from '../interfaces/schemaRegistry/ISchemaRegistry';
 import {SchemaRegistrySecurityProtocol} from '../enums/SchemaRegistrySecurityProtocol';
-import {ArtifactSchemaType} from '../interfaces/workbooks/IArtifact';
 import * as schemaRegistryCatalog from '../nedb/schema-registry-catalog';
 import {IWorkbook} from '../interfaces/workbooks/IWorkbook';
 import {
   AvroConfluentSchema,
-  AvroOptions, ExtendedAvroSchema,
+  AvroOptions,
+  ExtendedAvroSchema,
+  JsonConfluentSchema,
   JsonOptions,
   ProtoOptions,
-  SchemaRegistryAPIClientOptions, SchemaType
-} from '@plasmido/plasmido-schema-registry/dist/@types';
-import {SchemaRegistryAPIClientArgs} from '@plasmido/plasmido-schema-registry/dist/api';
-import {SchemaRegistry} from '@plasmido/plasmido-schema-registry';
+  SchemaRegistryAPIClientOptions,
+  SchemaType
+} from '@theagilemonkeys/plasmido-schema-registry/dist/@types';
+import {SchemaRegistryAPIClientArgs} from '@theagilemonkeys/plasmido-schema-registry/dist/api';
+import {SchemaRegistry} from '@theagilemonkeys/plasmido-schema-registry';
 import {RetryMiddlewareOptions} from 'mappersmith/middleware/retry/v2';
 import {Authorization} from 'mappersmith';
+import {ArtifactSchemaType} from '../enums/ArtifactSchemaType';
+import {replaceUserVariables} from '../environment/variables';
+import {Replaceable} from '../interfaces/environment/Replaceable';
 
-// TODO Configuration
 const DEFAULT_SCHEMA_REGISTRY_RETRY_OPTIONS = {
   maxRetryTimeInSecs: 5,
   initialRetryTimeInSecs: 0.1,
@@ -25,26 +29,16 @@ const DEFAULT_SCHEMA_REGISTRY_RETRY_OPTIONS = {
   retries: 3, // max retries
 } as Partial<RetryMiddlewareOptions>;
 
-// TODO Configuration
-// TODO https://github.com/mtth/avsc/wiki/API#typeforschemaschema-opts
 const DEFAULT_SCHEMA_REGISTRY_AVRO_OPTIONS = {
-  // logicalTypes: { decimal: DecimalType } // todo
 } as AvroOptions;
 
-// TODO Configuration
-// todo https://ajv.js.org/options.html#strict-mode-options
 const DEFAULT_SCHEMA_REGISTRY_JSON_OPTIONS = {
   strict: true
 } as JsonOptions;
 
-// TODO Configuration
-// todo To select which message in a schema containing multiple messages to use for encoding/decoding the payload. If omitted, the first message type in the schema is used.
 const DEFAULT_SCHEMA_REGISTRY_PROTOBUF_OPTIONS = {
   messageName: 'CustomMessage'
 } as ProtoOptions;
-
-// TODO for https https://nodejs.org/api/https.html#https_class_https_agent
-// new Agent({ keepAlive: true })
 
 const schemaRegistryAPIClientOptions = {
   [SchemaType.AVRO]: DEFAULT_SCHEMA_REGISTRY_AVRO_OPTIONS,
@@ -57,7 +51,7 @@ export const connect = (schemaRegistry: ISchemaRegistry): SchemaRegistry => {
 
   const schemaRegistryAPIClientArgs = {
     host: schemaRegistry.url,
-    clientId: 'PLASMIDO', // TODO
+    clientId: 'PLASMIDO',
     retry: DEFAULT_SCHEMA_REGISTRY_RETRY_OPTIONS
   } as SchemaRegistryAPIClientArgs;
 
@@ -85,11 +79,9 @@ export const getSchemas = async (schemaRegistry: ISchemaRegistry) => {
   return latestSchemas.sort((a, b) => a.subject.localeCompare(b.subject));
 }
 
-// todo right now only Avro Schema
-// todo stop on first fail
-export const connectAllSchemaRegistries = async (workbook: IWorkbook) => {
+export const connectAllSchemaRegistries = async (workbook: IWorkbook, userVariables: Array<Replaceable>) => {
   let schemasRegistriesIds = workbook.artifacts
-    .filter(value => value.schemaType === ArtifactSchemaType.AVRO)
+    .filter(value => value.schemaType !== ArtifactSchemaType.PLAIN)
     .map(value => value.payloadSchema.schemaRegistryId)
     .filter(value => value !== undefined) as Array<string>;
   schemasRegistriesIds = [...new Set(schemasRegistriesIds)];
@@ -97,6 +89,7 @@ export const connectAllSchemaRegistries = async (workbook: IWorkbook) => {
 
   const schemaRegistries = new Map();
   schemasRegistriesConfigurations.forEach(schemaRegistryConfiguration => {
+    schemaRegistryConfiguration.url = replaceUserVariables(schemaRegistryConfiguration.url || '', userVariables);
     const registry = connect(schemaRegistryConfiguration);
     schemaRegistries.set(schemaRegistryConfiguration._id, registry);
   })
@@ -114,7 +107,23 @@ export const saveAvroSchema = async (schemaRegistry: ISchemaRegistry,
   }
   const {id: _, subject: registeredSubject} = await registry.register(avroSchema, userOpts);
   const result = await registry.getLatestSchema(registeredSubject);
-  console.log(result); // todo remove
+  console.log(result);
+  return result;
+}
+
+export const saveJsonSchema = async (schemaRegistry: ISchemaRegistry,
+                                     schema: string,
+                                     subject: string) => {
+  const registry = connect(schemaRegistry);
+  const formattedSchema = schema.replace(/\r\n|\r|\n/g, ' ');
+
+  const userOpts = {
+    subject: subject || ''
+  }
+  const jsonSchema = {type: SchemaType.JSON, schema: formattedSchema} as JsonConfluentSchema;
+  const {id: _, subject: registeredSubject} = await registry.register(jsonSchema, userOpts);
+  const result = await registry.getLatestSchema(registeredSubject);
+  console.log(result);
   return result;
 }
 

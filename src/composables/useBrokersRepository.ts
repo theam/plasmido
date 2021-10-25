@@ -4,6 +4,8 @@ import {syncEmit} from 'app/src/global';
 import {buildConnectionOptions} from './connectionOptionsBuilder';
 import {BrokerProtocol} from 'src/enums/BrokerProtocol';
 import {IBroker} from 'src/interfaces/broker/IBroker';
+import {cloneDeep, isEqual} from 'lodash';
+import {v4} from 'uuid';
 
 const brokers = ref([] as Array<IBroker>);
 
@@ -12,10 +14,13 @@ export default function useBrokersRepository() {
   const inserted = ref(false);
   const updated = ref(false);
   const currentBrokerInitialized = ref(false);
+  const originalBroker = ref(null as null | IBroker);
+  const originalBrokerSet = ref(false);
 
   const newBroker = () => {
     const broker = {
       _id: '',
+      uuid: v4(),
       protocol: BrokerProtocol.NONE,
       ssl_enabled: false,
       rejectUnauthorized: false,
@@ -30,6 +35,7 @@ export default function useBrokersRepository() {
     } as IBroker;
     Object.assign(currentBroker.value, broker);
     currentBrokerInitialized.value = true;
+    setOriginalBroker(currentBroker.value);
     return broker;
   }
 
@@ -47,10 +53,13 @@ export default function useBrokersRepository() {
     }
     const value = brokers.value?.find((el) => el._id === id);
     if (value !== undefined) {
+      if (value.uuid === undefined) {
+        value.uuid = v4();
+      }
       Object.assign(currentBroker.value, value);
       currentBrokerInitialized.value = true;
+      setOriginalBroker(currentBroker.value);
     }
-    // log error
   };
 
   const updateBroker = async (value: IBroker) => {
@@ -72,15 +81,17 @@ export default function useBrokersRepository() {
 
   const saveBroker = async () => {
     resetState();
-    return currentBroker.value._id === '' ? await insertBroker(currentBroker.value) : await updateBroker(currentBroker.value);
+    const result = currentBroker.value._id === '' ? await insertBroker(currentBroker.value) : await updateBroker(currentBroker.value);
+    setOriginalBroker(currentBroker.value);
+    return result;
   }
 
-  const initBroker = (id:string | null) => {
+  const initBroker = (id: string | null) => {
     resetState();
     id ? findBrokerById(id) : newBroker();
   }
 
-  const assignNewBroker = (newValue:IBroker) => {
+  const assignNewBroker = (newValue: IBroker) => {
     Object.assign(currentBroker.value, newValue);
   }
 
@@ -88,16 +99,11 @@ export default function useBrokersRepository() {
     inserted.value = false;
     updated.value = false;
     currentBrokerInitialized.value = false;
+    originalBrokerSet.value = false;
   }
 
-  // const truncate = () => {
-  //   socket.emit(Events.PLASMIDO_INPUT_BROKER_REMOVE, {});
-  //   console.info(PLASMIDO_VUE_USE_BROKER_REPOSITORY, ':truncate:EVENT_SENT:', Events.PLASMIDO_INPUT_BROKER_REMOVE);
-  // };
-
   const connectOptions = computed(() => {
-    const connectOptionsFromCurrentBroker = buildConnectionOptions(currentBroker.value);
-    return connectOptionsFromCurrentBroker;
+    return buildConnectionOptions(currentBroker.value);
   });
 
   const isSASL = computed(() => {
@@ -105,8 +111,42 @@ export default function useBrokersRepository() {
       (BrokerProtocol.SASL_SCRAM_256.valueOf() === currentBroker.value.protocol) ||
       (BrokerProtocol.SASL_SCRAM_512.valueOf() === currentBroker.value.protocol);
   });
+
   const isAws = computed(() => (BrokerProtocol.SASL_AWS_IAM.valueOf() === currentBroker.value.protocol));
 
+  const setOriginalBroker = (sourceBroker: IBroker) => {
+    originalBroker.value = cloneDeep(sourceBroker);
+    originalBrokerSet.value = true;
+  };
+
+  const hasChanges = computed(() => {
+    return !isEqual(cloneDeep(currentBroker.value), originalBroker.value) && originalBrokerSet.value;
+  });
+
+  const cloneBroker = async (clusterUUID: string) => {
+    const cluster = brokers.value.find(value => value.uuid === clusterUUID);
+    if (cluster) {
+      const newCluster = cloneDeep(cluster);
+      newCluster.name = newCluster.name + ' (1)';
+      newCluster.uuid = v4();
+      newCluster._id = '';
+      Object.assign(currentBroker.value, newCluster);
+      await saveBroker();
+      return currentBroker.value._id;
+    }
+    return Promise.reject('Not found');
+  }
+
+  const deleteBroker = async (clusterUUID: string) => {
+    const brokerIndex = brokers.value.findIndex(value => value.uuid === clusterUUID);
+    if (brokerIndex !== -1) {
+      await syncEmit(Events.PLASMIDO_INPUT_BROKER_DELETE_SYNC, clusterUUID);
+      brokers.value.splice(brokerIndex, 1);
+      newBroker();
+      return Promise.resolve();
+    }
+    return Promise.reject('Not found');
+  }
 
   return {
     currentBroker: readonly(currentBroker),
@@ -121,7 +161,10 @@ export default function useBrokersRepository() {
     assignNewBroker,
     saveBroker,
     isSASL,
-    isAws
+    isAws,
+    hasChanges,
+    cloneBroker,
+    deleteBroker
   }
 }
 

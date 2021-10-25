@@ -1,4 +1,5 @@
 export default interface IEnvironmentTreeItem {
   to: string,
-  name: string
+  name: string,
+  uuid: string
 }

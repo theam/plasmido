@@ -1,13 +1,16 @@
 <template>
   <div class="full-width row  justify-between items-center">
-    <div class="col" style="overflow: auto;">
+    <div class="col q-pr-lg" style="overflow: auto;">
       <q-select
         v-model="selectedBroker"
         :options="brokersSelector"
         label="Cluster"
         class="q-pb-none"
         dense
-        behavior="dialog"
+        use-input
+        input-debounce="0"
+        @filter="filterBrokers"
+        behavior="menu"
       >
         <template v-slot:selected-item="scope">
           <div class="ellipsis">{{ scope.opt.label }}</div>
@@ -28,20 +31,6 @@
         </template>
       </q-select>
     </div>
-    <div class="col" style="overflow: auto; min-width: 40px; max-width: 40px;">
-      <q-btn class="gt-xs" size="12px" flat dense round icon="more_vert">
-        <q-menu anchor="bottom left" self="top left">
-          <q-list style="min-width: 100px">
-            <q-item clickable @click="openAddCluster()">
-              <q-item-section>Add</q-item-section>
-            </q-item>
-            <q-item clickable @click="openEditCluster()" :disable="isSelectedBrokerEmpty">
-              <q-item-section>Edit</q-item-section>
-            </q-item>
-          </q-list>
-        </q-menu>
-      </q-btn>
-    </div>
     <div class="col" style="overflow: auto;">
       <q-select
         v-model="selectedTopic"
@@ -52,44 +41,34 @@
         label="Topic"
         class="q-pb-none"
         dense
+        use-input
+        input-debounce="0"
+        @filter="filterTopics"
+        behavior="menu"
       >
         <template v-slot:selected-item="scope">
           <div class="ellipsis">{{ scope.opt.label }}</div>
           <q-tooltip>{{ scope.opt.label }}</q-tooltip>
         </template>
+
+        <template v-slot:no-option>
+          <q-item>
+            <q-item-section class="text-grey">
+              No results
+            </q-item-section>
+          </q-item>
+        </template>
       </q-select>
-    </div>
-    <div class="col" style="overflow: auto; min-width: 40px; max-width: 40px;">
-      <q-btn dense round flat icon="o_open_in_full" @click="openTopic()"/>
     </div>
   </div>
 </template>
 <script lang="ts">
 import {computed, defineComponent, onMounted, ref, watch} from 'vue';
-import {useQuasar} from 'quasar';
-import ClusterDialog from 'components/workbook/cluster/ClusterDialog.vue';
-import TopicDialog from 'components/workbook/cluster/TopicDialog.vue';
 import {IBroker} from 'src/interfaces/broker/IBroker';
-import {buildConnectionOptions} from 'src/composables/connectionOptionsBuilder';
 import useBrokersRepository from 'src/composables/useBrokersRepository';
 import useAdminRepository from 'src/composables/useAdminRepository';
 import {brokerToBrokerSelector, IBrokerSelector} from 'src/interfaces/selectors/IBrokerSelector';
 import {ITopicSelector, topicToTopicSelector} from 'src/interfaces/selectors/ITopicSelector';
-
-const dialogClusterNotifyOptions = (selectedBrokerId: string | null) => ({
-  component: ClusterDialog,
-  componentProps: {brokerId: selectedBrokerId}
-});
-
-const dialogTopicNotifyOptions = (broker: IBroker,
-                                  topicName: string) => ({
-  component: TopicDialog,
-  componentProps: {
-    selectedBroker: broker,
-    clusterOptions: buildConnectionOptions(broker),
-    selectedTopic: topicName
-  }
-});
 
 export default defineComponent({
   name: 'ClusterTopicSelector',
@@ -102,10 +81,11 @@ export default defineComponent({
     selectedTopicChanged: null
   },
   setup(props, context) {
-    const $q = useQuasar();
     const selectedBroker = ref(null as null | IBrokerSelector);
     const selectedTopic = ref(null as null | ITopicSelector);
     const isSelectedBrokerEmpty = ref(true);
+    const topicsSelector = ref([] as Array<ITopicSelector | null>);
+    const brokersSelector = ref([] as Array<IBrokerSelector | null>);
     const {brokers, currentBroker, initBroker} = useBrokersRepository();
     const {topics, findAllTopics, searchingTopics, resetTopics, resetConnection} = useAdminRepository();
 
@@ -118,8 +98,11 @@ export default defineComponent({
       }
     });
 
-    const brokersSelector = computed(() => brokers.value?.map(broker => brokerToBrokerSelector(broker)));
-    const topicsSelector = computed(() => topics.value?.map(topic => topicToTopicSelector(topic.name)));
+    watch(topics.value, () => {
+      topicsSelector.value.length = 0;
+      topicsSelector.value = topics.value?.map(topic => topicToTopicSelector(topic.name));
+    });
+
     const disableTopics = computed(() => isSelectedBrokerEmpty.value || topics.value?.length === 0);
 
     const onSelectedBrokerUpdated = async (prevValue: IBrokerSelector | null) => {
@@ -129,7 +112,11 @@ export default defineComponent({
       emitSelectedBrokerChanged(broker);
 
       resetConnection();
-      await findAllTopics(broker, 3000, 0);
+      try {
+        await findAllTopics(broker, 3000, 0);
+      } catch (e) {
+        console.error(e);
+      }
       selectedTopic.value = prevValue === null ? topicToTopicSelector(props.originTopicName) : null;
       emitSelectedTopicChanged(selectedTopic.value);
     }
@@ -138,40 +125,44 @@ export default defineComponent({
       void onSelectedBrokerUpdated(prevValue);
     });
 
-    const openAddCluster = () => {
-      $q.dialog(dialogClusterNotifyOptions(null))
-        .onOk((data: IBroker) => {
-          selectedBroker.value = brokerToBrokerSelector(data);
-        });
-    };
-
-    const openEditCluster = () => {
-      const selectedBrokerId = selectedBroker.value?.value || '';
-      $q.dialog(dialogClusterNotifyOptions(selectedBrokerId))
-        .onOk((data: IBroker) => {
-          selectedBroker.value = brokerToBrokerSelector(data);
-        });
-    };
-
-    const openTopic = () => {
-      const broker = selectedBroker.value?.broker;
-      const topicName = selectedTopic.value?.value;
-      if (broker === undefined) {
-        return null;
-      }
-      $q.dialog(dialogTopicNotifyOptions(broker, topicName || ''))
-        .onOk((data: string) => {
-          selectedTopic.value = topicToTopicSelector(data);
-          emitSelectedTopicChanged(selectedTopic.value);
-        });
-    };
-
     const emitSelectedBrokerChanged = (value: IBroker | undefined) => {
       context.emit('selectedClusterChanged', value);
     };
 
     const emitSelectedTopicChanged = (value: null | ITopicSelector) => {
       context.emit('selectedTopicChanged', value?.value || '');
+    };
+
+    const filterTopics = (val: null | string, update: (anyValue: unknown) => null) => {
+      if (val === null) {
+        update(() => {
+          topicsSelector.value.length = 0;
+          topicsSelector.value = topics.value?.map(topic => topicToTopicSelector(topic.name));
+        })
+        return
+      }
+
+      update(() => {
+        const needle = val?.toLowerCase();
+        topicsSelector.value.length = 0;
+        topicsSelector.value = topics.value?.filter(current =>  current.name.toLocaleLowerCase().indexOf(needle) > -1).map(topic => topicToTopicSelector(topic.name));
+      })
+    };
+
+    const filterBrokers = (val: null | string, update: (anyValue: unknown) => null) => {
+      if (val === null) {
+        update(() => {
+          brokersSelector.value.length = 0;
+          brokersSelector.value = brokers.value?.map(broker => brokerToBrokerSelector(broker));
+        })
+        return
+      }
+
+      update(() => {
+        const needle = val?.toLowerCase();
+        brokersSelector.value.length = 0;
+        brokersSelector.value = brokers.value?.filter(current =>  current.name.toLocaleLowerCase().indexOf(needle) > -1).map(broker => brokerToBrokerSelector(broker));
+      })
     };
 
     return {
@@ -183,9 +174,8 @@ export default defineComponent({
       disableTopics,
       searchingTopics,
       emitSelectedTopicChanged,
-      openAddCluster,
-      openEditCluster,
-      openTopic,
+      filterTopics,
+      filterBrokers
     }
   }
 });

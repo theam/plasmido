@@ -21,12 +21,17 @@
                   {{ item.name }}
                 </q-item-label>
                 <q-item-label caption lines="2">
-                  <span>Producers:{{ item.producersSize }} Consumers:{{item.consumersSize}}</span>
+                  <span>Producers:{{ item.producersSize }} Consumers:{{ item.consumersSize }}</span>
                 </q-item-label>
               </q-item-section>
               <q-item-section top side>
                 <div class="text-grey-8 q-gutter-xs">
-                  <q-btn class="gt-xs" size="12px" flat dense round icon="more_vert"/>
+                  <BasicOptions
+                    :on-clone="onCloneWorkbook"
+                    :on-delete="onDeleteWorkbook"
+                    :value="item.uuid"
+                    class="col-1"
+                  />
                 </div>
               </q-item-section>
             </q-item>
@@ -47,11 +52,26 @@ import {computed, ref} from 'vue';
 import {ArtifactType} from 'app/src/enums/ArtifactType';
 import IWorkbookTreeItem from 'src/interfaces/trees/IWorkbookTreeItem';
 import useWorkbooksRepository from 'src/composables/useWorkbooksRepository';
+import BasicOptions from 'components/workbook/artifact/BasicOptions.vue';
+import {useRouter} from 'vue-router';
+import {QDialogOptions, useQuasar} from 'quasar';
+import ConfirmDialog from 'components/ConfirmDialog.vue';
+
+const confirmDeleteDialogOptions = () => ({
+  component: ConfirmDialog,
+  componentProps: {
+    title: 'Confirm delete',
+    description: 'Do you want to delete this workbook?'
+  }
+} as QDialogOptions);
 
 export default {
   name: 'WorkBookTree',
+  components: {BasicOptions},
   setup() {
-    const {workbooks} = useWorkbooksRepository();
+    const router = useRouter();
+    const $q = useQuasar();
+    const {workbooks, cloneWorkbook, deleteWorkbook} = useWorkbooksRepository();
 
     const workbookItems = computed(() =>
       workbooks.value.map(value => {
@@ -68,13 +88,29 @@ export default {
           name: value.name,
           producersSize: producersSize,
           consumersSize: consumersSize,
-          icon: '' // TODO icon?
+          icon: '',
+          uuid: value.uuid
         } as IWorkbookTreeItem;
       }));
+
+    const onCloneWorkbook = async (workbookUUID: string) => {
+      const newId = await cloneWorkbook(workbookUUID);
+      await router.push({name: 'workbook_path', params: {id: newId}});
+    }
+
+    const onDeleteWorkbook = (workbookUUID: string) => {
+      $q.dialog(confirmDeleteDialogOptions())
+        .onOk(async () => {
+          await deleteWorkbook(workbookUUID);
+          await router.push({name: 'empty_workbook_path'});
+        });
+    };
 
     return {
       splitterModel: ref(25),
       workbookItems,
+      onCloneWorkbook,
+      onDeleteWorkbook
     }
   }
 }

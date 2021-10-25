@@ -4,10 +4,12 @@
       :name="name"
       @title-changed="onTitleChanged"
       class="col-11"
+      edit-style="text-h9"
     />
-    <ArtifactOptions
-      :on-clone-artifact="onCloneArtifact"
-      :on-delete-artifact="onDeleteArtifact"
+    <BasicOptions
+      :on-clone="onCloneArtifact"
+      :on-delete="onDeleteArtifact"
+      button-label="options"
       class="col-1"
     />
   </div>
@@ -17,51 +19,53 @@
     v-on:selectedClusterChanged="onSelectedClusterChanged"
     v-on:selectedTopicChanged="onSelectedTopicChanged"/>
   <div class="row  q-pt-md">
-    <ArtifactSchemaTypeSelect :format-artifact="currentArtifact.schemaType"
+    <ConsumerViewAsTypeSelect
+      :consumer-view-type-prop="outputType"
+      v-on:consumerViewTypeChanged="onConsumerViewTypeChanged"
+    />
+    <ConsumeFromTypeSelect :consume-from-artifact="localArtifact.consumeFrom"
+                           v-on:consumeFromTypeChanged="onConsumeFromTypeChanged"/>
+    <ArtifactSchemaTypeSelect :format-artifact="localArtifact.schemaType"
                               v-on:schemaTypeChanged="onSchemaTypeChanged"/>
-    <SchemaRegistrySubjectSelector
-      :origin-subject="currentArtifact.payloadSchema?.schemaSubject"
-      :origin-schema-registry-id="currentArtifact.payloadSchema?.schemaRegistryId"
-      :origin-schema-id="currentArtifact.payloadSchema?.schemaId"
+    <SchemaRegistrySelector
+      :origin-schema-registry-id="localArtifact.payloadSchema?.schemaRegistryId"
+      :origin-schema-id="localArtifact.payloadSchema?.schemaId"
       v-on:selectedSchemaRegistryChanged="onSelectedSchemaRegistryChanged"
-      v-on:selectedSubjectChanged="onSelectedSubjectChanged"
       class="col"
-      v-if="formatAvro"
+      v-if="formatSchemaRegistry"
     />
   </div>
   <div class="q-pt-md">
-    <q-tabs dense align="left" v-model="artifactTabs" no-caps class="text-overline">
+    <q-tabs
+      indicator-color="transparent"
+      active-color="primary"
+      dense
+      align="left"
+      v-model="artifactTabs"
+      no-caps>
       <q-tab name="output" label="Output"/>
-      <q-tab name="settings" label="Settings"/>
     </q-tabs>
     <q-tab-panels
       v-model="artifactTabs"
       animated
       class="bg-grey-1">
       <q-tab-panel name="output">
-        <div class="q-pt-sm q-pb-none">
-          <q-option-group
-            v-model="outputType"
-            :options="[
-              {label: 'Text only', value: 'text'},
-              {label: 'Table', value: 'card'}
-              ]"
-            color="primary"
-            dense
-            inline
-            text-weight-bolder
-          />
-        </div>
-        <div v-if="outputType === 'text'">
+        <div v-if="outputType.toString() === 'LIST'">
           <TextViewerOutputMessages
             :current-artifact-id="artifact?.uuid"
-            :consumedEvents="consumedEvents"
+            :consumed-events-total="consumedEventsTotal"
+            :status="status"
+            :text-format="artifact?.textFormat"
+            v-on:textFormatChanged="onTextFormatChanged"
           />
         </div>
         <div v-else>
           <CardTableOutputMessages
             :current-artifact-id="artifact?.uuid"
-            :consumedEvents="consumedEvents"
+            :consumed-events-total="consumedEventsTotal"
+            :status="status"
+            :text-format="artifact?.textFormat"
+            v-on:textFormatChanged="onTextFormatChanged"
           />
         </div>
       </q-tab-panel>
@@ -69,118 +73,133 @@
   </div>
 </template>
 <script lang="ts">
-import {defineComponent, PropType, ref, inject, computed, watch} from 'vue';
+import {computed, defineComponent, inject, PropType, ref, watch} from 'vue';
 import ClusterTopicSelector from 'components/workbook/cluster/ClusterTopicSelector.vue';
 import TitleEditor from 'components/workbook/title/TitleEditor.vue';
-import {ArtifactSchemaType, ArtifactTextFormat, IArtifact} from 'src/interfaces/workbooks/IArtifact';
+import {IArtifact} from 'src/interfaces/workbooks/IArtifact';
 import {IBroker} from 'src/interfaces/broker/IBroker';
-import {IConsumedEvent} from 'src/interfaces/IConsumedEvent';
 import TextViewerOutputMessages from 'components/workbook/consumer/TextViewerOutputMessages.vue';
 import CardTableOutputMessages from 'components/workbook/consumer/CardTableOutputMessages.vue';
-import {ISubjectSelector} from 'src/interfaces/selectors/ISubjectSelector';
 import {IArtifactSchemaTypeSelector} from 'src/interfaces/selectors/IArtifactSchemaTypeSelector';
 import {IArtifactTextFormatSelector} from 'src/interfaces/selectors/IArtifactTextFormatSelector';
-import SchemaRegistrySubjectSelector from 'components/workbook/schema/SchemaRegistrySubjectSelector.vue';
 import ArtifactSchemaTypeSelect from 'components/workbook/artifact/ArtifactSchemaTypeSelect.vue';
-import ArtifactOptions from 'components/workbook/artifact/ArtifactOptions.vue';
+import BasicOptions from 'components/workbook/artifact/BasicOptions.vue';
+import {WorkBookStatus} from 'src/enums/WorkBookStatus';
+import {ArtifactSchemaType} from 'src/enums/ArtifactSchemaType';
+import {IConsumeFromSelector} from 'src/interfaces/selectors/IConsumeFromSelector';
+import {ConsumeFromType} from 'src/enums/ConsumeFromType';
+import {ArtifactTextFormat} from 'src/enums/ArtifactTextFormat';
+import ConsumeFromTypeSelect from 'components/workbook/consumer/ConsumeFromTypeSelect.vue';
+import ConsumerViewAsTypeSelect from 'components/workbook/consumer/ConsumerViewAsTypeSelect.vue';
+import {ConsumerViewType} from 'src/enums/ConsumerViewType';
+import {IConsumerViewAsSelector} from 'src/interfaces/selectors/IConsumerViewAsSelector';
+import SchemaRegistrySelector from 'components/workbook/schema/SchemaRegistrySelector.vue';
 
 export default defineComponent({
   name: 'ConsumerForm',
   components: {
-    ArtifactOptions,
+    BasicOptions,
     TitleEditor,
     ClusterTopicSelector,
     TextViewerOutputMessages,
     CardTableOutputMessages,
     ArtifactSchemaTypeSelect,
-    SchemaRegistrySubjectSelector
+    SchemaRegistrySelector,
+    ConsumeFromTypeSelect,
+    ConsumerViewAsTypeSelect
   },
   props: {
     name: {type: String, required: true},
     artifact: {type: Object as PropType<IArtifact>, required: true},
-    consumedEvents: {type: Object as PropType<Array<IConsumedEvent>>, default: [], required: true}
+    consumedEventsTotal: {type: Number, default: 0},
+    status: {type: Object as PropType<WorkBookStatus>}
   },
   setup(props) {
     const artifactTabs = ref('output');
-    const outputType = ref('card');
-    const currentArtifact: IArtifact = {...props.artifact};
+    const outputType = ref(ConsumerViewType.TABLE);
+    const localArtifact = ref(props.artifact);
     const updateConsumer = inject('updateConsumer') as (param: IArtifact) => string;
     const cloneArtifact = inject('cloneArtifact') as (artifactUUID: string) => string;
     const deleteArtifact = inject('deleteArtifact') as (artifactUUID: string) => string;
 
     const onSelectedClusterChanged = (value: IBroker) => {
-      currentArtifact.brokerId = value._id || '';
+      localArtifact.value.brokerId = value._id || '';
       onArtifactUpdated();
     }
 
     const onSelectedTopicChanged = (value: string) => {
-      currentArtifact.topicName = value || '';
+      localArtifact.value.topicName = value || '';
       onArtifactUpdated();
     }
 
     const onTitleChanged = (value: string) => {
-      currentArtifact.name = value;
+      localArtifact.value.name = value;
       onArtifactUpdated();
     }
 
     const onArtifactUpdated = () => {
-      updateConsumer(currentArtifact);
+      updateConsumer(localArtifact.value);
     }
-
 
     const onSelectedSchemaRegistryChanged = (value: string) => {
-      currentArtifact.payloadSchema = currentArtifact.payloadSchema || {};
-      currentArtifact.payloadSchema.schemaRegistryId = value || '';
-      updateConsumer(currentArtifact);
+      localArtifact.value.payloadSchema = localArtifact.value.payloadSchema || {};
+      localArtifact.value.payloadSchema.schemaRegistryId = value || '';
+      updateConsumer(localArtifact.value);
     }
 
-    const onSelectedSubjectChanged = (value: ISubjectSelector) => {
-      currentArtifact.payloadSchema = currentArtifact.payloadSchema || {};
-      currentArtifact.payloadSchema.schemaSubject = value?.value || undefined;
-      currentArtifact.payloadSchema.schemaId = value?.schemaId || undefined;
-      updateConsumer(currentArtifact);
+    const onConsumeFromTypeChanged = (value: IConsumeFromSelector) => {
+      localArtifact.value.consumeFrom = ConsumeFromType[value.value as keyof typeof ConsumeFromType];
+      updateConsumer(localArtifact.value);
     }
 
     const onSchemaTypeChanged = (value: IArtifactSchemaTypeSelector) => {
-      currentArtifact.schemaType = ArtifactSchemaType[value.value as keyof typeof ArtifactSchemaType];
-      updateConsumer(currentArtifact);
+      localArtifact.value.schemaType = ArtifactSchemaType[value.value as keyof typeof ArtifactSchemaType];
+      if (value.value === ArtifactSchemaType.PLAIN) {
+        localArtifact.value.payloadSchema = {};
+      }
+      updateConsumer(localArtifact.value);
     }
 
     const onTextFormatChanged = (value: IArtifactTextFormatSelector) => {
-      currentArtifact.textFormat = ArtifactTextFormat[value.value as keyof typeof ArtifactTextFormat];
-      updateConsumer(currentArtifact);
+      localArtifact.value.textFormat = ArtifactTextFormat[value.value as keyof typeof ArtifactTextFormat];
+      updateConsumer(localArtifact.value);
     }
 
-    watch(() => currentArtifact.payload, value => {
-      currentArtifact.payload = value as string;
-      updateConsumer(currentArtifact);
+    watch(() => localArtifact.value.payload, value => {
+      localArtifact.value.payload = value as string;
+      updateConsumer(localArtifact.value);
     })
 
-    const formatAvro = computed(() => currentArtifact.schemaType !== ArtifactSchemaType.PLAIN);
+    const formatSchemaRegistry = computed(() => localArtifact.value.schemaType === ArtifactSchemaType.SCHEMA_REGISTRY );
 
     const onCloneArtifact = () => {
-      cloneArtifact(currentArtifact.uuid);
+      cloneArtifact(localArtifact.value.uuid);
     }
 
-
     const onDeleteArtifact = () => {
-      deleteArtifact(currentArtifact.uuid);
+      deleteArtifact(localArtifact.value.uuid);
+    }
+
+    const onConsumerViewTypeChanged = (value: IConsumerViewAsSelector) => {
+      outputType.value = value.value;
     }
 
     return {
       outputType,
       artifactTabs,
-      currentArtifact,
+      localArtifact,
       onSelectedClusterChanged,
       onSelectedTopicChanged,
       onArtifactUpdated,
       onTitleChanged,
       onSchemaTypeChanged,
+      onConsumeFromTypeChanged,
       onSelectedSchemaRegistryChanged,
-      onSelectedSubjectChanged,
-      formatAvro,
+      formatSchemaRegistry,
       onCloneArtifact,
-      onDeleteArtifact
+      onDeleteArtifact,
+      onConsumerViewTypeChanged,
+      onTextFormatChanged
     }
   }
 });

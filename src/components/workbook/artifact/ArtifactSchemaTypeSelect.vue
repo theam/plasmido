@@ -10,21 +10,22 @@
 
 <script lang="ts">
 import {defineComponent, PropType, ref, watch} from 'vue';
-import {ArtifactSchemaType, ArtifactSchemaTypeDescription} from 'src/interfaces/workbooks/IArtifact';
 import {artifactSchemaTypeToArtifactSchemaTypeSelector} from 'src/interfaces/selectors/IArtifactSchemaTypeSelector';
+import {ArtifactSchemaType, ArtifactSchemaTypeDescription} from 'src/enums/ArtifactSchemaType';
 
 export default defineComponent({
   name: 'ArtifactSchemaTypeSelect',
   props: {
     formatArtifact: {
-      type: Object as PropType<ArtifactSchemaType>, default: ArtifactSchemaType.AVRO
+      type: Object as PropType<ArtifactSchemaType>, default: ArtifactSchemaType.SCHEMA_REGISTRY
     }
   },
   emits: {
-    schemaTypeChanged: null // no validation
+    schemaTypeChanged: null
   },
   setup(props, context) {
-    const options = Object.values(ArtifactSchemaType).map(value => ({
+    const options = Object.values(ArtifactSchemaType)
+      .map(value => ({
       label: ArtifactSchemaTypeDescription[value as keyof typeof ArtifactSchemaTypeDescription],
       value: value
     }));

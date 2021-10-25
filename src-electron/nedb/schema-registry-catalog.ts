@@ -18,7 +18,6 @@ export const insert = async (registry: ISchemaRegistry) => {
   return await database.asyncInsert(registryDatabase, query) as ISchemaRegistry;
 };
 
-// TODO remove update and rename this one to update
 export const update = async(currentRegistry: ISchemaRegistry) => {
   const query = {_id: currentRegistry._id || ''};
   const updateQuery = {
@@ -45,6 +44,10 @@ export const findAll = async () => {
 export const findAllByIds = async (ids: Array<string>) => {
   return await database.asyncFindAllBy(registryDatabase, {_id: { $in: ids} }, {createdAt: 1}) as Array<ISchemaRegistry>;
 }
+
+export const remove = async (schemaRegistryUUID: string) => {
+  void await database.asyncRemove(registryDatabase, {uuid: schemaRegistryUUID});
+};
 
 export const removeAll = async () => {
   return await database.asyncRemove(registryDatabase, {});

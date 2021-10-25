@@ -10,7 +10,8 @@
       />
     </div>
     <div
-      class="text-h6 text-primary"
+      v-bind:class="editStyle"
+      class="text-primary"
       v-else>
       {{ localName }}
       <q-icon name="edit" @click="editable" v-if="!editMode"/>
@@ -22,7 +23,7 @@ import {defineComponent, ref, watch} from 'vue';
 
 export default defineComponent({
   name: 'TitleEditor',
-  props: {name: {type: String, default: '', required: true}},
+  props: {name: {type: String, default: '', required: true}, editStyle: {type:String, default: 'text-h6'}},
   emits: {
     titleChanged: null
   },

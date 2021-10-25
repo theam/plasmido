@@ -46,7 +46,6 @@ export const updateArtifactStatusTo = async (workbookUUID: string, io: Server, a
 };
 
 export const updateArtifactStatusToStopped = async (workbookUUID: string, artifactId: string, io: Server) => {
-  // TODO remove it?
   return updateArtifactStatusTo(workbookUUID, io, artifactId, WorkBookStatus.STOPPED);
 };
 
@@ -66,6 +65,7 @@ export const findOne = async (id: string) => {
 };
 
 export const removeAll = async () => {
-  return await database.asyncRemove(executionsArtifactDatabase, {});
+  await database.asyncRemove(executionsArtifactDatabase, {});
+  return true;
 };
 

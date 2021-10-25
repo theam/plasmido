@@ -6,22 +6,19 @@
           label: 'JSON',
           value: 'json'
         },{
-          label: 'Avro (SR)',
+          label: 'Schema (SR)',
           value: 'avro'
         }]"
       color="primary"
       inline
     />
   </div>
-  <SchemaSelector/>
 </template>
 <script lang="ts">
-import SchemaSelector from 'components/workbook/schema/SchemaSelector.vue';
 import {ref} from 'vue';
 
 export default {
   name: 'KeyMessage',
-  components: {SchemaSelector},
   setup() {
     const typeGroup = ref('json');
 

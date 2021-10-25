@@ -29,7 +29,12 @@
               </q-item-section>
               <q-item-section top side>
                 <div class="text-grey-8 q-gutter-xs">
-                  <q-btn class="gt-xs" size="12px" flat dense round icon="more_vert"/>
+                  <BasicOptions
+                    :on-clone="onCloneCluster"
+                    :on-delete="onDeleteCluster"
+                    :value="item.uuid"
+                    class="col-1"
+                  />
                 </div>
               </q-item-section>
             </q-item>
@@ -48,11 +53,27 @@
 import {computed, defineComponent, ref} from 'vue'
 import IClusterTreeItem from 'src/interfaces/trees/IClusterTreeItem';
 import useBrokersRepository from 'src/composables/useBrokersRepository';
+import {useRouter} from 'vue-router';
+import {QDialogOptions, useQuasar} from 'quasar';
+import ConfirmDialog from 'components/ConfirmDialog.vue';
+import BasicOptions from 'components/workbook/artifact/BasicOptions.vue';
+
+const confirmDeleteDialogOptions = () => ({
+  component: ConfirmDialog,
+  componentProps: {
+    title: 'Confirm delete',
+    description: 'Do you want to delete this cluster?'
+  }
+} as QDialogOptions);
 
 export default defineComponent({
   name: 'ClusterTree',
+  components: {BasicOptions},
   setup() {
-    const {brokers} = useBrokersRepository();
+    const router = useRouter();
+    const $q = useQuasar();
+
+    const {brokers, cloneBroker, deleteBroker} = useBrokersRepository();
 
     const brokerItems = computed(() =>
       brokers.value.map(value => {
@@ -61,13 +82,29 @@ export default defineComponent({
           to: '/clusters/' + id,
           name: value.name,
           url: value.url,
-          protocol: value.protocol
+          protocol: value.protocol,
+          uuid: value.uuid
         } as IClusterTreeItem;
       }));
 
+    const onCloneCluster = async (clusterUUID: string) => {
+      const newId = await cloneBroker(clusterUUID);
+      await router.push({name: 'broker_path', params: {id: newId}});
+    }
+
+    const onDeleteCluster = (clusterUUID: string) => {
+      $q.dialog(confirmDeleteDialogOptions())
+        .onOk(async () => {
+          await deleteBroker(clusterUUID);
+          await router.push({name: 'empty_broker_path'});
+        });
+    };
+
     return {
       splitterModel: ref(25),
-      brokerItems
+      brokerItems,
+      onCloneCluster,
+      onDeleteCluster
     }
   }
 });

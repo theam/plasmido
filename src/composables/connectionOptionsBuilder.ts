@@ -1,8 +1,6 @@
 import {IBrokerOptions} from 'src/interfaces/broker/IBrokerOptions';
 import {IBroker} from 'src/interfaces/broker/IBroker';
-import {ISchemaRegistry} from 'src/interfaces/schemaRegistry/ISchemaRegistry';
 
-// todo rename
 export const buildConnectionOptions = (broker:IBroker):IBrokerOptions => {
   return {
     ssl: {
@@ -21,7 +19,4 @@ export const buildConnectionOptions = (broker:IBroker):IBrokerOptions => {
   };
 }
 
-export const buildSchemaConnectionOptions = (schemaRegistry: ISchemaRegistry) => {
-  return {};
-}
 

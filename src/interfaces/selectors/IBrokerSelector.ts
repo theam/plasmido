@@ -7,7 +7,7 @@ export interface IBrokerSelector {
 }
 
 export const brokerToBrokerSelector = (broker: IBroker | null) => {
-  if (broker === null || broker._id === '') return null;
+  if (broker === null || broker._id === undefined) return null;
   return {
     label: broker?.name,
     value: broker?._id,

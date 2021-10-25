@@ -6,8 +6,8 @@ import * as workbookCatalog from '../nedb/workbook-catalog';
 
 export const listenToWorkbookRepository = (socket: Socket) => {
 
-  socket.on(Events.PLASMIDO_INPUT_WORKBOOK_FIND_ALL_SYNC, async (_: any, callback: (error: Error | null,
-                                                                                    workbooksFound: Array<IWorkbook> | null) => void) => {
+  socket.on(Events.PLASMIDO_INPUT_WORKBOOK_FIND_ALL_SYNC, async (callback: (error: Error | null,
+                                                                            workbooksFound: Array<IWorkbook> | null) => void) => {
     try {
       const result = await workbookCatalog.findAll();
       callback(null, result);
@@ -33,6 +33,17 @@ export const listenToWorkbookRepository = (socket: Socket) => {
     try {
       const result = await workbookCatalog.update(workbookInstance);
       callback(null, result);
+    } catch (e) {
+      callback(e, null)
+    }
+  });
+
+  socket.on(Events.PLASMIDO_INPUT_WORKBOOK_DELETE_SYNC, async (workbookUUID: string,
+                                                               callback: (error: Error | null,
+                                                                          result: null) => void) => {
+    try {
+      await workbookCatalog.remove(workbookUUID);
+      callback(null, null);
     } catch (e) {
       callback(e, null)
     }

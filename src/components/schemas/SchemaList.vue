@@ -1,39 +1,51 @@
 <template>
-  <q-form @reset="resetConnection" class="q-gutter-sm">
+  <q-form @reset="refreshSchemas" class="q-gutter-sm">
     <div class="q-py-none">
       <q-table
         grid
         title="Schemas"
-        :rows="schemas"
+        :rows="localSchemas"
         :columns="columns"
         row-key="subject"
         :filter="filter"
         hide-header
         no-data-label="No schemas"
         separator="none"
-        :selection="selectable"
-        @selection="selectSchema"
-        v-model:selected="selected"
       >
-
         <template v-slot:top-right>
-          <q-input borderless dense debounce="300" v-model="filter" placeholder="Search">
+          <q-input
+            dense
+            debounce="300"
+            v-model="filter"
+            placeholder="Search"
+          >
             <template v-slot:append>
-
               <q-icon name="search"/>
-              <q-btn outline round dense icon="refresh" class="q-ml-md" type="reset"/>
-              <q-btn round dense icon="add" class="q-ml-md" color="primary" @click="openAddSchema"/>
             </template>
           </q-input>
+          <q-btn
+            outline
+            class="q-ml-md"
+            icon-right="refresh"
+            label="Refresh"
+            type="reset"
+            @click="refreshSchemas"
+          />
+          <q-btn
+            outline
+            class="q-ml-md"
+            icon-right="add"
+            label="Add"
+            color="primary"
+            @click="openAddSchema"
+          />
         </template>
 
         <template v-slot:item="props">
           <div class="q-pa-xs row col-12 items-start q-gutter-md grid-style-transition"
-               :style="props.selected ? 'transform: scale(0.99);' : ''"
                :props="props"
-               @click="props.selected = !props.selected"
           >
-            <q-card class="my-card" :class="props.selected ? 'bg-grey-2' : ''">
+            <q-card class="my-card">
               <q-card-section>
                 <div class="row no-wrap q-pt-sm q-pb-none items-center">
                   <div class="col-11 text-subtitle2">
@@ -88,7 +100,9 @@ import {ISchemaRegistry} from 'src/interfaces/schemaRegistry/ISchemaRegistry';
 import useSchemaRegistry from 'src/composables/useSchemaRegistry';
 import {syntaxHighlight} from 'src/global';
 import NewSchemaDialog from 'components/schemas/NewSchemaDialog.vue';
-import {AvroSchema, ExtendedAvroSchema} from '@plasmido/plasmido-schema-registry/dist/@types';
+import {AvroSchema, ExtendedAvroSchema} from '@theagilemonkeys/plasmido-schema-registry/dist/@types';
+import {Schema} from '@theagilemonkeys/plasmido-schema-registry/src/@types';
+import {SchemaType} from 'src/enums/SchemaType';
 
 const schemaCreatedNotifyOptions = () => ({
   color: 'green-4',
@@ -97,18 +111,12 @@ const schemaCreatedNotifyOptions = () => ({
   message: 'Schema created'
 });
 
-const duplicateTopicNotifyOptions = () => ({
-  color: 'red-4',
-  textColor: 'white',
-  icon: 'error',
-  message: 'Duplicated subject'
-});
-
 const addSchemaDialogOptions = () => ({
   component: NewSchemaDialog,
   componentProps: {
     subject: '',
-    schema: ''
+    schema: '',
+    schemaType: SchemaType.AVRO
   }
 } as QDialogOptions);
 
@@ -116,32 +124,30 @@ export default defineComponent({
   name: 'SchemaList',
   props: {
     registry: {type: Object as PropType<ISchemaRegistry>, required: true},
-    selectedSubject: {type: String},
     showDetails: {type: Boolean, default: true}
   },
   emits: ['selectedSchemaChanged'],
-  setup(props, context) {
+  setup(props) {
     const $q = useQuasar();
-    const columns = [ // remove?
+    const columns = [
       {
         name: 'subject', required: true, label: 'Subject', align: 'left', sortable: true,
         field(row: ExtendedAvroSchema) {
-          return row.subject || (row.schema as AvroSchema).name; // todo JsonSchemas?
+          return row.subject || (row.schema as AvroSchema).name;
         },
         format(val: string) {
           return `${val}`;
         }
       }
     ];
-    const selected = ref([{name: props.selectedSubject || ''}]);
 
     const {
       schemas,
       schemaInserted,
-      // schemaUpdated,
       getSchemas,
       saveSchema,
-      resetConnection
+      resetConnection,
+      isJsonSchema
     } = useSchemaRegistry();
 
     const loadSchemas = async () => {
@@ -162,35 +168,43 @@ export default defineComponent({
       $q.dialog(addSchemaDialogOptions())
         .onOk((result: {
           subject: string,
-          schema: string
+          schema: string,
+          schemaType: SchemaType
         }) => {
-          const {subject, schema} = result;
-          return void saveSchema(props.registry, subject, schema);
+          const {subject, schema, schemaType} = result;
+          return void saveSchema(props.registry, subject, schema, schemaType);
         });
     };
-
-    const selectSchema = (value: any) => {
-      if (value) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        return context.emit('selectedSchemaChanged', value?.keys[0]);
-      }
-    };
-
-    const selectable = computed(() => props.showDetails ? 'none' : 'single');
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     const highlight = (val: string) => syntaxHighlight(val);
 
+    const refreshSchemas = async () => {
+      resetConnection();
+      await loadSchemas();
+    }
+
+    const localSchemas = computed(() => {
+      return schemas.value.map(schema => {
+        const resultSchema = {...schema} as ExtendedAvroSchema;
+        const internalSchema = schema.schema as Schema | AvroSchema;
+        if (isJsonSchema(internalSchema)) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
+          resultSchema.schema = internalSchema['validate'].schema;
+        }
+        return resultSchema;
+      });
+    })
+
     return {
       schemas,
       columns,
-      selected,
-      selectable,
       filter: ref(''),
       resetConnection,
       openAddSchema,
-      selectSchema,
-      highlight
+      highlight,
+      refreshSchemas,
+      localSchemas
     }
   }
 });

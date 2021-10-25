@@ -2,8 +2,10 @@ import {readonly, ref} from 'vue';
 import {ISchemaRegistry} from 'src/interfaces/schemaRegistry/ISchemaRegistry';
 import {syncEmit} from 'src/global';
 import {Events} from 'src/enums/Events';
-import {SchemaRegistry} from '@plasmido/plasmido-schema-registry';
-import {AvroSchema, ExtendedAvroSchema, Schema} from '@plasmido/plasmido-schema-registry/dist/@types';
+import {SchemaRegistry} from '@theagilemonkeys/plasmido-schema-registry';
+import {AvroSchema, ExtendedAvroSchema, Schema} from '@theagilemonkeys/plasmido-schema-registry/dist/@types';
+import JsonSchema from '@theagilemonkeys/plasmido-schema-registry/dist/JsonSchema';
+import {SchemaType} from 'src/enums/SchemaType';
 
 const schemas = ref([] as Array<ExtendedAvroSchema>);
 
@@ -41,22 +43,23 @@ export default function useSchemaRegistry() {
   };
 
   const isAvroSchema = (schema: AvroSchema | Schema): schema is AvroSchema => (schema as AvroSchema).name != null;
-  // const isJsonSchema = (schema: JsonSchema | Schema): schema is JsonSchema => true;
-  // const isProtoSchema = (schema: ProtoSchema | Schema): schema is ProtoSchema => true;
+  const isJsonSchema = (schema: JsonSchema | Schema): schema is JsonSchema => {
+    return (schema as JsonSchema)['validate'] != null;
+  };
 
-  const saveSchema = async (registry: ISchemaRegistry, subject: string, schema: string) => {
+  const saveSchema = async (registry: ISchemaRegistry, subject: string, schema: string, schemaType: SchemaType) => {
     resetConnection();
 
     const parameters = {
       registryInstance: registry,
-      subject,
-      schema
+      subject: subject,
+      schema: schema,
+      schemaType: schemaType
     };
     const savedSchema = await syncEmit(Events.PLASMIDO_INPUT_SCHEMA_REGISTRY_SAVE_SYNC, parameters) as ExtendedAvroSchema;
 
     if (!savedSchema) {
       console.error('Could not create schema');
-      // return subject; // todo error
     }
     await getSchemas(registry);
 
@@ -87,7 +90,9 @@ export default function useSchemaRegistry() {
     connect,
     getSchemas,
     saveSchema,
-    resetSchemas
+    resetSchemas,
+    isAvroSchema,
+    isJsonSchema
   }
 }
 

@@ -18,7 +18,6 @@ export const insert = async (environment: IEnvironment) => {
   return await database.asyncInsert(environmentDatabase, query) as IEnvironment;
 };
 
-// TODO remove update and rename this one to update
 export const updateSimple = async(currentEnvironment: IEnvironment) => {
   const query = {_id: currentEnvironment._id || ''};
   const updateQuery = {
@@ -46,8 +45,17 @@ export const findOne = async (id: string) => {
   return await database.asyncFindOne(environmentDatabase, query) as IEnvironment;
 };
 
+export const findOneByUUID = async (uuid: string) => {
+  const query = {uuid: uuid};
+  return await database.asyncFindOne(environmentDatabase, query) as IEnvironment;
+};
+
 export const findAll = async () => {
   return await database.asyncFindAllBy(environmentDatabase, {}, {createdAt: 1}) as Array<IEnvironment>;
+};
+
+export const remove = async (userUUID: string) => {
+  void await database.asyncRemove(environmentDatabase, {uuid: userUUID});
 };
 
 export const removeAll = async () => {

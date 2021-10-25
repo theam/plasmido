@@ -11,32 +11,24 @@ export default function useOutputMessages() {
       message: {
         offset: offset,
         timestamp: timestampPayload,
-        key: keyPayload,
-        headers: headersPayload,
-        value: valuePayload,
       },
     } = event.eachMessagePayload;
-
-    const avroDecodedMessage = event.avroDecodedMessage;
-
-    const time = timeStampToDate(timestampPayload);
-    const key = arrayBufferToString(keyPayload);
-    const header = headerToString(headersPayload);
-    const value = avroDecodedMessage !== '' && avroDecodedMessage !== undefined ? avroDecodedMessage : arrayBufferToString(valuePayload);
 
     return {
       partition: partition,
       topic: topic,
-      key: key,
-      time: time,
+      key: '',
+      time: timeStampToDate(timestampPayload),
       offset: offset,
-      header: header,
-      value: value
+      header: headerToString(event.plainHeaders),
+      value: event.plainMessage
     } as IOutputMessageRow;
   };
 
+  const sleep = (ms?:number) => new Promise(resolve => setTimeout(resolve, ms || 1000));
+
   const timeStampToDate = (timestamp: string | number | Date) => {
-    const date = new Date(Number(timestamp)).toLocaleDateString('en-US'); // todo format
+    const date = new Date(Number(timestamp)).toLocaleDateString('en-US');
     const time = new Date(Number(timestamp)).toLocaleTimeString('en-US');
     return `${date} - ${time}`;
   }
@@ -46,7 +38,8 @@ export default function useOutputMessages() {
     if (headers) {
       for (const key in headers) {
         if (headers.hasOwnProperty(key)) {
-          result += `${key}: ${arrayBufferToString(headers[key])} `;
+          const value = headers[key] as string;
+          result += `${key}: ${value} `;
         }
       }
     }
@@ -54,21 +47,8 @@ export default function useOutputMessages() {
     return result;
   }
 
-  const arrayBufferToString = (value: any) => {
-    if (value === null) {
-      return '';
-    }
-
-    let result = '';
-    try {
-      result = new TextDecoder().decode(value);
-    } catch (e) {
-      result = '<Error reading value/>';
-    }
-    return result;
-  }
-
   return {
-    toObject
+    toObject,
+    sleep
   }
 }

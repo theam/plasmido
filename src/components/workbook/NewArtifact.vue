@@ -36,7 +36,6 @@ export default defineComponent({
   },
   setup(props) {
 
-    // computed
     const showMe = computed(() => {
       return !props.workbookArtifacts || props.workbookArtifacts.length === 0
     });

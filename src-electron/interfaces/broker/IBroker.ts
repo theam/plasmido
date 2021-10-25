@@ -2,9 +2,10 @@ import {BrokerProtocol} from '../../enums/BrokerProtocol';
 
 export interface IBroker {
   _id?: string,
+  uuid: string,
   name: string,
   url: string,
-  protocol: BrokerProtocol, // TODO rename to security
+  protocol: BrokerProtocol,
   ssl_enabled: boolean,
   rejectUnauthorized: boolean,
   username?: string,

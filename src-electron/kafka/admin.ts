@@ -32,7 +32,7 @@ export const disconnect = async (connection: Admin) => {
   }
 };
 
-export const listTopics = async (brokerKafkaInstance: IBrokerKafkaInstance) => {
+export const listTopics = async (brokerKafkaInstance: IBrokerKafkaInstance, ) => {
   const adminConnection = await connect(brokerKafkaInstance);
   if (adminConnection !== null) {
     try {
@@ -46,14 +46,6 @@ export const listTopics = async (brokerKafkaInstance: IBrokerKafkaInstance) => {
   }
   return null;
 };
-
-export const deleteConsumerGroup = async (brokerKafkaInstance: IBrokerKafkaInstance, groupId:string) => {
-  const adminConnection = await connect(brokerKafkaInstance);
-  if (adminConnection) {
-    return adminConnection.deleteGroups([groupId]);
-  }
-  return null;
-}
 
 export const fetchTopicsMetadata = async (brokerKafkaInstance: IBrokerKafkaInstance) => {
   const adminConnection = await connect(brokerKafkaInstance);
@@ -80,6 +72,15 @@ export const fetchTopicsMetadata = async (brokerKafkaInstance: IBrokerKafkaInsta
   return null;
 };
 
+export const setOffsetsToTimestamp = async (topic: string, brokerKafkaInstance: IBrokerKafkaInstance, groupId: string, timestamp: number) => {
+  const adminConnection = await connect(brokerKafkaInstance);
+  if (adminConnection) {
+    const entry = await adminConnection.fetchTopicOffsetsByTimestamp(topic, timestamp);
+    await adminConnection.setOffsets({ groupId, topic, partitions: entry })
+  }
+  return Promise.resolve();
+}
+
 export const createTopic = async (topicName: string, brokerKafkaInstance: IBrokerKafkaInstance) => {
   const topic = {
     topic: topicName,
@@ -101,9 +102,61 @@ export const createTopic = async (topicName: string, brokerKafkaInstance: IBroke
       await disconnect(adminConnection);
       return topicCreated;
     } catch (error) {
-      await disconnect(adminConnection);
       console.error(PLASMIDO_NODE_ADMIN, ':createTopic:EVENT_SENT:', error, topic, optionsTopic, brokerKafkaInstance);
+    } finally {
+      await disconnect(adminConnection);
     }
   }
   return null;
 };
+
+export const deleteTopic = async (topicsNames: Array<string>, brokerKafkaInstance: IBrokerKafkaInstance) => {
+  const adminConnection = await connect(brokerKafkaInstance);
+  if (adminConnection !== null) {
+    try {
+      await adminConnection.deleteTopics({topics: topicsNames})
+      return true;
+    } catch (error) {
+      console.error(PLASMIDO_NODE_ADMIN, ':deleteTopic:', error, topicsNames, brokerKafkaInstance);
+    } finally {
+      await disconnect(adminConnection);
+    }
+  }
+  return false;
+}
+
+export const listGroups = async (brokerKafkaInstance: IBrokerKafkaInstance) => {
+  const adminConnection = await connect(brokerKafkaInstance);
+  if (adminConnection !== null) {
+    try {
+      const groupOverview = await adminConnection.listGroups();
+      if (groupOverview) {
+        const groupIds = groupOverview.groups.map(group => group.groupId);
+        const groupDescriptions = await adminConnection.describeGroups(groupIds);
+        return groupDescriptions.groups;
+      }
+      return [];
+    } catch (error) {
+      console.error(PLASMIDO_NODE_ADMIN, ':listTopics:', error, brokerKafkaInstance);
+    } finally {
+      await disconnect(adminConnection);
+    }
+  }
+  return [];
+}
+
+export const deleteConsumerGroups = async (brokerKafkaInstance: IBrokerKafkaInstance, groupIds: Array<string>) => {
+  const adminConnection = await connect(brokerKafkaInstance);
+  if (adminConnection !== null) {
+    try {
+      const deleteGroupsResults = await adminConnection.deleteGroups(groupIds);
+      return deleteGroupsResults;
+    } catch (error) {
+      console.error(PLASMIDO_NODE_ADMIN, ':deleteConsumerGroups:', error, groupIds, brokerKafkaInstance);
+      return [];
+    } finally {
+      await disconnect(adminConnection);
+    }
+  }
+  return null;
+}

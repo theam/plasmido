@@ -5,7 +5,6 @@ import {IBrokerSSLOptions} from 'app/src-electron/interfaces/broker/IBrokerSSLOp
 import {IBrokerSASLOptions} from 'app/src-electron/interfaces/broker/IBrokerSASLOptions';
 import {IBrokerKafkaInstance} from 'app/src-electron/interfaces/broker/IBrokerKafkaInstance';
 
-// TODO move it to configuration
 export const DEFAULT_REQUEST_TIME_OUT = 25000;
 export const DEFAULT_CONNECTION_TIME_OUT = 3000;
 export const DEFAULT_MAX_RETRY_TIME = 30000;
@@ -33,7 +32,6 @@ const sslBrokerOptionsToKafkaSSLOptions = (sslBrokerOptions: IBrokerSSLOptions) 
 const saslBrokerOptionsToKafkaSASLOptions = (saslOptions: IBrokerSASLOptions, kafkaInstance: IBrokerKafkaInstance): SASLOptions | undefined => {
   let saslOptionsKafkaConfig: SASLOptions | undefined;
 
-  // TODO probar con el certificado: ca: [fs.readFileSync('./testHelpers/certs/cert-signed', 'utf-8')]
   switch (saslOptions && saslOptions.protocol) {
     case BrokerProtocol.NONE:
       saslOptionsKafkaConfig = undefined;

@@ -7,6 +7,6 @@ export interface IWorkbook {
   uuid: string,
   name: string,
   action: WorkBookActions,
-  status: WorkBookStatus, // TODO remove it?
+  status: WorkBookStatus,
   artifacts: Array<IArtifact>
 }

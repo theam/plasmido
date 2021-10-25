@@ -1,0 +1,58 @@
+name: Create release
+
+on:
+  push:
+    tags:
+      - "v*.*.*" # Push events to matching v*, i.e. v1.0.0, v20.15.10
+
+jobs:
+  build:
+
+    runs-on: ${{ matrix.os-versions }}
+
+    defaults:
+      run:
+        shell: bash
+
+    strategy:
+      matrix:
+        os-versions: [macos-latest]
+        node-version: [12.x]
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v2
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    - name: Install project and add quasar-cli
+      run: npm install && npm i -g @quasar/cli
+
+    - name: Build mac only version
+      run: quasar build -m electron -p 55151
+
+    - name: Get the version
+      id: get_version
+      run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+
+    - name: Zip output darwin version
+      run: zip -r  ./plasmido-darwin-${{ steps.get_version.outputs.VERSION }}.zip ./dist/electron/Plasmido-darwin-x64/*
+
+    - name: Create release
+      uses: softprops/action-gh-release@v1
+      id: create_release
+      with:
+        tag_name: ${{ steps.get_version.outputs.VERSION }}
+        body: Automated Electron Deployment
+        name: Release ${{ steps.get_version.outputs.VERSION }}
+        draft: false
+        prerelease: false
+        files: ./plasmido-darwin-${{ steps.get_version.outputs.VERSION }}.zip
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+
+
+

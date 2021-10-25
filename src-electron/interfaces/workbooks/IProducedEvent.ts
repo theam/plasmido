@@ -1,4 +1,6 @@
+import {Message} from 'kafkajs';
+
 export interface IProducedEvent {
-  message: string | undefined,
+  message: Message[],
   artifactUUID: string
 }

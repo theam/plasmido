@@ -11,22 +11,19 @@
 <script lang="ts">
 import {defineComponent, PropType, ref, watch} from 'vue';
 import {
-  ArtifactTextFormat,
-  ArtifactTextFormatDescription
-} from 'src/interfaces/workbooks/IArtifact';
-import {
   artifactTextFormatToArtifactTextFormatSelector,
 } from 'src/interfaces/selectors/IArtifactTextFormatSelector';
+import {ArtifactTextFormat, ArtifactTextFormatDescription} from 'src/enums/ArtifactTextFormat';
 
 export default defineComponent({
   name: 'ArtifactTextFormatSelect',
   props: {
     textFormatArtifact: {
-      type: Object as PropType<ArtifactTextFormat>, default: ArtifactTextFormat.JSON
+      type: Object as PropType<ArtifactTextFormat>, default: () => ArtifactTextFormat.JSON
     }
   },
   emits: {
-    textFormatChanged: null // no validation
+    textFormatChanged: null
   },
   setup(props, context) {
     const options = Object.values(ArtifactTextFormat).map(value => ({

@@ -40,6 +40,10 @@ export const findAll = async () => {
   return await database.asyncFindAllBy(workbooksDatabase, {}, {createdAt: 1}) as Array<IWorkbook>;
 };
 
+export const remove = async (workbookUUID: string) => {
+  void await database.asyncRemove(workbooksDatabase, {uuid: workbookUUID});
+};
+
 export const removeAll = async () => {
   return await database.asyncRemove(workbooksDatabase, {});
 };

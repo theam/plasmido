@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Nedb from 'nedb';
 import path from 'path';
-import {remote} from 'electron';
+import { app } from '@electron/remote';
 
 const DATABASE_FOLDER = '/db/';
 
@@ -10,7 +10,7 @@ export const getDatabasePath = (fileName:string) => {
   if (process.env.DEV) {
     return '.' + filePath;
   }
-  return path.join(remote.app.getPath('userData'), DATABASE_FOLDER + fileName);
+  return path.join(app.getPath('userData'), DATABASE_FOLDER + fileName);
 }
 
 export const asyncFindFirstBy = (db: Nedb, query: any, sort: any) => {
@@ -66,10 +66,31 @@ export const asyncFindAllBy = (db: Nedb, query: any, sort: any) => {
   });
 };
 
+export const asyncFindAllByPaginate = (db: Nedb, query: any, sort: any, skip: number, limit: number) => {
+  return new Promise((resolve, reject) => {
+    db.find(query).sort(sort).skip(skip).limit(limit).exec((error, result) => {
+      error == null ? resolve(result) : reject(error);
+    });
+  });
+};
+
+export const asyncCountBy = (db: Nedb, query: any) => {
+  return new Promise((resolve, reject) => {
+    db.count(query).exec((error, result) => {
+      error == null ? resolve(result) : reject(error);
+    });
+  });
+};
+
+
 export const asyncRemove = (db: Nedb, query: any) => new Promise((resolve, reject) => {
   db.remove(query, {multi: true}, (error, result) => {
     error == null ? resolve(result) : reject(error);
   });
 });
+
+export const compact = (db: Nedb) => {
+  db.persistence.compactDatafile();
+};
 
 

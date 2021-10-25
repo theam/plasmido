@@ -1,4 +1,4 @@
-import {ArtifactTextFormat, ArtifactTextFormatDescription} from 'src/interfaces/workbooks/IArtifact';
+import {ArtifactTextFormat, ArtifactTextFormatDescription} from 'src/enums/ArtifactTextFormat';
 
 export interface IArtifactTextFormatSelector {
   label: string,

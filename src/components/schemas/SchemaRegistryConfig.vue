@@ -1,26 +1,37 @@
 <template>
-  <q-form @submit="saveSchemaRegistry" @reset="onReset" class="q-gutter-sm">
-    <q-toolbar>
-      <q-toolbar-title class="text-primary">
-        Configuration
+  <q-form @submit="saveSchemaRegistry" class="q-gutter-sm">
+    <q-toolbar class="q-pt-lg q-pl-md q-pr-md">
+      <q-toolbar-title>
+        <TitleEditor
+          v-model:name="localRegistry.name"
+          v-on:title-changed="onSchemaRegistryNameChanged"
+        />
       </q-toolbar-title>
-      <q-btn outline round dense icon="network_check" :loading="connecting" class="q-ml-md" :color="connectedColor"
-             v-on:click.prevent="connect(localRegistry)">
+      <q-btn
+        outline
+        class="q-ml-md"
+        icon-right="o_play_arrow"
+        :color="connectedColor"
+        label="Test"
+        :loading="connecting"
+        v-on:click.prevent="connect(localRegistry)"
+      >
         <template v-slot:loading>
           <q-spinner-radio size='xs'/>
         </template>
       </q-btn>
-      <q-btn outline round dense icon="refresh" class="q-ml-md" type="reset"/>
-      <q-btn round dense icon="o_save" color="primary" class="q-ml-md" type="submit"/>
+      <q-btn
+        outline
+        class="q-ml-md"
+        icon-right="o_save"
+        color="primary"
+        type="submit"
+        label="Save"
+        :disable="!hasChanges"
+      />
     </q-toolbar>
-    <q-input v-model="localRegistry.name"
-             :rules="[ val => val && val.length > 0 || 'Please type something']"
-             error-message="Required field"
-             label="Cluster name"
-
-    />
     <q-input v-model="localRegistry.url"
-             :rules="[ val => val && val.length > 0 || 'Please type something']"
+             :rules="[ val => val && val.length > 0 || 'Please type a url']"
              label="Server"
     />
     <q-select v-model="localRegistry.securityProtocol"
@@ -37,18 +48,19 @@
                type="password"
       />
     </div>
-    <!--    TODO https -->
-    <!--    <q-checkbox dense size="md" v-model="localRegistry.ssl_enabled" label="SSL"/>-->
   </q-form>
 </template>
 <script lang="ts">
 import {computed, defineComponent, onMounted, ref, watch} from 'vue';
-import {useQuasar} from 'quasar';
+import {QDialogOptions, useQuasar} from 'quasar';
 import {cloneDeep} from 'lodash';
 import {ISchemaRegistry} from 'src/interfaces/schemaRegistry/ISchemaRegistry';
 import useSchemaRegistryRepository from 'src/composables/useSchemaRegistryRepository';
 import {SchemaRegistrySecurityProtocol} from 'app/src-electron/enums/SchemaRegistrySecurityProtocol';
 import useSchemaRegistry from 'src/composables/useSchemaRegistry';
+import ConfirmExitDialog from 'components/ConfirmExitDialog.vue';
+import {onBeforeRouteLeave, onBeforeRouteUpdate} from 'vue-router';
+import TitleEditor from 'components/workbook/title/TitleEditor.vue';
 
 const savedNotifyOptions = (name: string) => ({
   color: 'green-4',
@@ -64,6 +76,11 @@ const connectingErrorNotifyOptions = (registry: ISchemaRegistry) => ({
   message: `Could not connect to ${registry.name} (${registry.url})`
 });
 
+const confirmDialogOptions = () => ({
+  component: ConfirmExitDialog,
+  componentProps: {}
+} as QDialogOptions);
+
 const CONNECTED_COLOR = 'green';
 const ERROR_COLOR = 'red-4';
 const NOT_CONNECTED_COLOR = 'black';
@@ -75,6 +92,7 @@ export default defineComponent({
     updatedRegistry: null,
     persistedRegistry: null
   },
+  components: {TitleEditor},
   setup(props, context) {
     const $q = useQuasar();
     const localRegistry = ref({} as ISchemaRegistry);
@@ -85,19 +103,46 @@ export default defineComponent({
       isBasic,
       inserted,
       updated,
-      currentSchemaRegistry
+      currentSchemaRegistry,
+      hasChanges
     } = useSchemaRegistryRepository();
 
     const {
       connecting,
       connected,
       connectingSchemaRegistryError,
-      resetConnection,
       connect
     } = useSchemaRegistry();
 
     onMounted(() => {
       initSchemaRegistry(props.registryId);
+    });
+
+    const asyncConfirmExistDialog = () => new Promise((resolve) => {
+      $q.dialog(confirmDialogOptions())
+        .onOk((dialogResult: { action: string }) => {
+          if (dialogResult.action === 'ok') {
+            void saveSchemaRegistry();
+          }
+          resolve(true);
+        })
+        .onDismiss(() => resolve(false));
+    });
+
+    async function checkExit() {
+      let result = true;
+      if (hasChanges.value) {
+        return !!(await asyncConfirmExistDialog());
+      }
+      return result;
+    }
+
+    onBeforeRouteLeave(async () => {
+      return await checkExit();
+    });
+
+    onBeforeRouteUpdate(async () => {
+      return await checkExit();
     });
 
     watch(() => cloneDeep(currentSchemaRegistry.value), () => {
@@ -132,10 +177,9 @@ export default defineComponent({
       $q.notify(connectingErrorNotifyOptions(localRegistry.value));
     });
 
-    const onReset = () => {
-      resetConnection();
-      initSchemaRegistry(props.registryId);
-    };
+    const onSchemaRegistryNameChanged = (value: string) => {
+      localRegistry.value.name = value;
+    }
 
     return {
       connecting,
@@ -143,10 +187,11 @@ export default defineComponent({
       saveSchemaRegistry,
       initSchemaRegistry,
       securities: Object.values(SchemaRegistrySecurityProtocol),
-      onReset,
       connect,
       connectedColor,
-      isBasic
+      isBasic,
+      hasChanges,
+      onSchemaRegistryNameChanged
     }
   }
 });

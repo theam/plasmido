@@ -1,9 +1,9 @@
-import {readonly, ref} from 'vue';
+import {computed, readonly, ref} from 'vue';
 import {syncEmit} from 'src/global';
 import {Events} from 'src/enums/Events';
-import {IEnvironment} from 'src/interfaces/environment/IEnvironment';
-import {cloneDeep} from 'lodash';
 import {v4} from 'uuid';
+import {cloneDeep, isEqual} from 'lodash';
+import {IEnvironment} from 'src/interfaces/environment/IEnvironment';
 
 const environments = ref([] as Array<IEnvironment>);
 
@@ -12,16 +12,20 @@ export default function useEnvironmentsRepository() {
   const inserted = ref(false);
   const updated = ref(false);
   const currentEnvironmentInitialized = ref(false);
+  const originalEnvironment = ref(null as null | IEnvironment);
+  const originalEnvironmentSet = ref(false);
 
   const newEnvironment = () => {
     const environment = {
       _id: '',
       uuid: v4(),
       name: '',
+      isDefault: false,
       variables: []
     } as IEnvironment;
     Object.assign(currentEnvironment.value, environment);
     currentEnvironmentInitialized.value = true;
+    setOriginalEnvironment(currentEnvironment.value);
     return environment;
   }
 
@@ -41,9 +45,21 @@ export default function useEnvironmentsRepository() {
     if (value !== undefined) {
       Object.assign(currentEnvironment.value, value);
       currentEnvironmentInitialized.value = true;
+      setOriginalEnvironment(currentEnvironment.value);
     }
-    // log error
   };
+
+  const findEnvironmentByUUID = (uuid: string) => {
+    if (uuid === '') {
+      throw Error('Id could not be empty');
+    }
+    const value = environments.value?.find((el) => el.uuid === uuid);
+    if (value !== undefined) {
+      Object.assign(currentEnvironment.value, value);
+      currentEnvironmentInitialized.value = true;
+    }
+  };
+
 
   const updateEnvironment = async (value: IEnvironment) => {
     const savedEnvironment = await syncEmit(Events.PLASMIDO_INPUT_ENVIRONMENT_UPDATE_SYNC, value) as IEnvironment;
@@ -64,7 +80,9 @@ export default function useEnvironmentsRepository() {
 
   const saveEnvironment = async () => {
     resetState();
-    return currentEnvironment.value._id === '' ? await insertEnvironment(currentEnvironment.value) : await updateEnvironment(currentEnvironment.value);
+    const result = currentEnvironment.value._id === '' ? await insertEnvironment(currentEnvironment.value) : await updateEnvironment(currentEnvironment.value);
+    setOriginalEnvironment(currentEnvironment.value);
+    return result;
   }
 
   const initEnvironment = (id: string | null) => {
@@ -80,23 +98,57 @@ export default function useEnvironmentsRepository() {
     inserted.value = false;
     updated.value = false;
     currentEnvironmentInitialized.value = false;
+    originalEnvironmentSet.value = false;
   }
 
-  // const truncate = () => {
-  //   socket.emit(Events.PLASMIDO_INPUT_ENVIRONMENT_REMOVE, {});
-  //   console.info(PLASMIDO_VUE_USE_ENVIRONMENT_REPOSITORY, ':truncate:EVENT_SENT:', Events.PLASMIDO_INPUT_ENVIRONMENT_REMOVE);
-  // };
+  const setOriginalEnvironment = (sourceEnvironment: IEnvironment) => {
+    originalEnvironment.value = cloneDeep(sourceEnvironment);
+    originalEnvironmentSet.value = true;
+  };
+
+  const hasChanges = computed(() => {
+    return !isEqual(cloneDeep(currentEnvironment.value), originalEnvironment.value) && originalEnvironmentSet.value;
+  });
+
+  const cloneEnvironment = async (environmentUUID: string) => {
+    const environment = environments.value.find(value => value.uuid === environmentUUID);
+    if (environment) {
+      const newEnvironment = cloneDeep(environment);
+      newEnvironment.name = newEnvironment.name + ' (1)';
+      newEnvironment.uuid = v4();
+      newEnvironment._id = '';
+      Object.assign(currentEnvironment.value, newEnvironment);
+      await saveEnvironment();
+      return currentEnvironment.value._id;
+    }
+    return Promise.reject('Not found');
+  }
+
+  const deleteEnvironment = async (environmentUUID: string) => {
+    const environmentIndex = environments.value.findIndex(value => value.uuid === environmentUUID);
+    if (environmentIndex !== -1) {
+      await syncEmit(Events.PLASMIDO_INPUT_ENVIRONMENT_DELETE_SYNC, environmentUUID);
+      environments.value.splice(environmentIndex, 1);
+      newEnvironment();
+      return Promise.resolve();
+    }
+    return Promise.reject('Not found');
+  }
 
   return {
-    currentEnvironment: readonly(currentEnvironment),
-    environments: readonly(environments),
+    currentEnvironment,
+    environments,
     inserted: readonly(inserted),
     updated: readonly(updated),
     initEnvironment,
-    newEnvironment: newEnvironment,
+    newEnvironment,
     findAllEnvironments,
     findEnvironmentById,
+    findEnvironmentByUUID,
     assignNewEnvironment,
-    saveEnvironment
+    saveEnvironment,
+    cloneEnvironment,
+    deleteEnvironment,
+    hasChanges
   }
 }

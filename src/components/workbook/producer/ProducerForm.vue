@@ -4,10 +4,12 @@
       :name="name"
       @title-changed="onTitleChanged"
       class="col-11"
+      edit-style="text-h9"
     />
-    <ArtifactOptions
-      :on-clone-artifact="onCloneArtifact"
-      :on-delete-artifact="onDeleteArtifact"
+    <BasicOptions
+      :on-clone="onCloneArtifact"
+      :on-delete="onDeleteArtifact"
+      button-label="options"
       class="col-1"
     />
   </div>
@@ -19,19 +21,16 @@
   <div class="q-pt-md">
     <q-tabs dense align="left" v-model="artifactTabs" no-caps class="text-overline">
       <q-tab name="headers" label="Headers"/>
-      <q-tab name="keys" label="Keys"/>
       <q-tab name="payload" label="Payload"/>
-      <q-tab name="settings" label="Settings"/>
     </q-tabs>
     <q-tab-panels
       v-model="artifactTabs"
       animated
       class="bg-grey-1">
       <q-tab-panel name="headers">
-        <HeaderMessage/>
-      </q-tab-panel>
-      <q-tab-panel name="keys">
-        <KeyMessage/>
+        <HeaderMessage
+          :artifact="artifact"
+        />
       </q-tab-panel>
       <q-tab-panel name="payload">
         <PayloadMessage
@@ -46,19 +45,17 @@
 </template>
 <script lang="ts">
 import HeaderMessage from 'components/workbook/producer/HeaderMessage.vue'
-import KeyMessage from 'components/workbook/producer/KeyMessage.vue'
 import PayloadMessage from 'components/workbook/producer/PayloadMessage.vue'
 import {defineComponent, PropType, ref, inject} from 'vue';
 import ClusterTopicSelector from 'components/workbook/cluster/ClusterTopicSelector.vue';
 import TitleEditor from 'components/workbook/title/TitleEditor.vue';
 import {IArtifact} from 'src/interfaces/workbooks/IArtifact';
 import {IBroker} from 'src/interfaces/broker/IBroker';
-import ArtifactOptions from 'components/workbook/artifact/ArtifactOptions.vue';
-import {date} from 'quasar';
+import BasicOptions from 'components/workbook/artifact/BasicOptions.vue';
 
 export default defineComponent({
   name: 'ProducerForm',
-  components: {ArtifactOptions, TitleEditor, HeaderMessage, KeyMessage, PayloadMessage, ClusterTopicSelector},
+  components: {BasicOptions, TitleEditor, HeaderMessage, PayloadMessage, ClusterTopicSelector},
   props: {
     name: {type: String, required: true},
     artifact: {type: Object as PropType<IArtifact>, required: true},
