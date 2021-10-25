@@ -15,6 +15,11 @@ endif::[]
 image::doc/images/Intro.png[]
 image::doc/images/Intro%202.png[]
 
+== Releases
+
+* Version 0.1.0:
+** Mac version: https://github.com/theam/plasmido/releases/download/v0.1.0/plasmido-darwin-v0.1.0.zip
+
 == Development
 
 *Plasmido* is an Electron application that runs on your computer. You can run it from sources or build an executable for your preferred platform.
