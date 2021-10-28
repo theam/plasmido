@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Nedb from 'nedb';
 import path from 'path';
-import { app } from '@electron/remote';
+// @ts-ignore
+import {remote} from 'electron';
 
 const DATABASE_FOLDER = '/db/';
 
@@ -10,7 +11,8 @@ export const getDatabasePath = (fileName:string) => {
   if (process.env.DEV) {
     return '.' + filePath;
   }
-  return path.join(app.getPath('userData'), DATABASE_FOLDER + fileName);
+  const userData = remote.app.getPath('userData');
+  return path.join(userData, filePath);
 }
 
 export const asyncFindFirstBy = (db: Nedb, query: any, sort: any) => {

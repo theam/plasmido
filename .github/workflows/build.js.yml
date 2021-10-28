@@ -46,7 +46,7 @@ jobs:
       id: create_release
       with:
         tag_name: ${{ steps.get_version.outputs.VERSION }}
-        body: Automated Electron Deployment
+        body: Automated Plasmido Mac Deployment
         name: Release ${{ steps.get_version.outputs.VERSION }}
         draft: false
         prerelease: false
