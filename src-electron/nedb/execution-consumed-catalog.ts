@@ -1,6 +1,8 @@
 import * as database from './database';
 import Datastore from 'nedb';
 import {IConsumedEvent} from 'app/src-electron/interfaces/IConsumedEvent';
+import {IExtendedConsumedEvent} from "app/src-electron/interfaces/IExtendedConsumedEvent";
+import {isEmpty} from "lodash";
 
 let executionsConsumedDatabase: Datastore<IConsumedEvent>;
 
@@ -14,6 +16,9 @@ export const initExecutionConsumedDatabase = (filePath: string) => {
     if (err) {
       console.error('PLASMIDO_NODE:execution-consumed-catalog', ':initExecutionConsumedDatabase:DATABASE_ERROR:', err);
     }
+  });
+  executionsConsumedDatabase.ensureIndex({fieldName: "uniqueConstraint", unique: true}, function (error) {
+    console.warn('PLASMIDO_NODE:execution-consumed-catalog', ':duplicateOffset:DATABASE_ERROR:', error);
   });
 };
 
@@ -57,8 +62,21 @@ export const getConsumedCountByArtifact = async (artifactUUID: string, filter: s
 }
 
 export const insert = async (executionArtifact: IConsumedEvent) => {
-  const query = {...executionArtifact};
-  return await database.asyncInsert(executionsConsumedDatabase, query) as IConsumedEvent;
+  const message = executionArtifact?.eachMessagePayload?.message;
+  if (message) {
+    const artifactUUID = executionArtifact.artifactUUID;
+    const timestamp = message.timestamp;
+    const offset = message.offset;
+    const uniqueConstraint = artifactUUID + timestamp + offset;
+    const query = {...executionArtifact, uniqueConstraint: uniqueConstraint} as IExtendedConsumedEvent;
+    try {
+      return await database.asyncInsert(executionsConsumedDatabase, query) as IConsumedEvent;
+    } catch (e) {
+      console.warn('Could not insert consumed event', query, e);
+      return null;
+    }
+  }
+  return null;
 };
 
 export const removeAll = async () => {
