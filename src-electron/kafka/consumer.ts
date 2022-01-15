@@ -117,7 +117,6 @@ const stopConsumer = async (workbookUUID: string, executionArtifactId: string, a
   await consumer.stop();
   await consumer.disconnect();
   const groups = await listGroups(brokerKafkaInstance);
-  console.log('Current groups:', groups);
   await deleteConsumerGroups(brokerKafkaInstance, [groupId]);
 };
 

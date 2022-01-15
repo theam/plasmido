@@ -29,7 +29,6 @@ export default function useExecution() {
   const listenersOff = () => {
     socket.off(Events.PLASMIDO_OUTPUT_PRODUCER_PRODUCED_EVENT);
     socket.off(Events.PLASMIDO_OUTPUT_CONSUMER_CONSUMED_EVENT);
-    console.info(PLASMIDO_VUE_USE_EXECUTIONS, ':listenersOff:DONE:');
   };
 
   const eventProduced = (data: IProducedEventElement) => {

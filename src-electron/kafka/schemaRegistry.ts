@@ -1,8 +1,8 @@
-import {cloneDeep} from 'lodash';
-import {ISchemaRegistry} from '../interfaces/schemaRegistry/ISchemaRegistry';
-import {SchemaRegistrySecurityProtocol} from '../enums/SchemaRegistrySecurityProtocol';
-import * as schemaRegistryCatalog from '../nedb/schema-registry-catalog';
-import {IWorkbook} from '../interfaces/workbooks/IWorkbook';
+import { cloneDeep } from 'lodash'
+import { ISchemaRegistry } from '../interfaces/schemaRegistry/ISchemaRegistry'
+import { SchemaRegistrySecurityProtocol } from '../enums/SchemaRegistrySecurityProtocol'
+import * as schemaRegistryCatalog from '../nedb/schema-registry-catalog'
+import { IWorkbook } from '../interfaces/workbooks/IWorkbook'
 import {
   AvroConfluentSchema,
   AvroOptions,
@@ -12,14 +12,14 @@ import {
   ProtoOptions,
   SchemaRegistryAPIClientOptions,
   SchemaType
-} from '@theagilemonkeys/plasmido-schema-registry/dist/@types';
-import {SchemaRegistryAPIClientArgs} from '@theagilemonkeys/plasmido-schema-registry/dist/api';
-import {SchemaRegistry} from '@theagilemonkeys/plasmido-schema-registry';
-import {RetryMiddlewareOptions} from 'mappersmith/middleware/retry/v2';
-import {Authorization} from 'mappersmith';
-import {ArtifactSchemaType} from '../enums/ArtifactSchemaType';
-import {replaceUserVariables} from '../environment/variables';
-import {Replaceable} from '../interfaces/environment/Replaceable';
+} from '@theagilemonkeys/plasmido-schema-registry/dist/@types'
+import { SchemaRegistryAPIClientArgs } from '@theagilemonkeys/plasmido-schema-registry/dist/api'
+import { SchemaRegistry } from '@theagilemonkeys/plasmido-schema-registry'
+import { RetryMiddlewareOptions } from 'mappersmith/middleware/retry/v2'
+import { Authorization } from 'mappersmith'
+import { ArtifactSchemaType } from '../enums/ArtifactSchemaType'
+import { replaceUserVariables } from '../environment/variables'
+import { Replaceable } from '../interfaces/environment/Replaceable'
 
 const DEFAULT_SCHEMA_REGISTRY_RETRY_OPTIONS = {
   maxRetryTimeInSecs: 5,
@@ -106,9 +106,7 @@ export const saveAvroSchema = async (schemaRegistry: ISchemaRegistry,
     subject: subject
   }
   const {id: _, subject: registeredSubject} = await registry.register(avroSchema, userOpts);
-  const result = await registry.getLatestSchema(registeredSubject);
-  console.log(result);
-  return result;
+  return await registry.getLatestSchema(registeredSubject);
 }
 
 export const saveJsonSchema = async (schemaRegistry: ISchemaRegistry,
@@ -122,9 +120,7 @@ export const saveJsonSchema = async (schemaRegistry: ISchemaRegistry,
   }
   const jsonSchema = {type: SchemaType.JSON, schema: formattedSchema} as JsonConfluentSchema;
   const {id: _, subject: registeredSubject} = await registry.register(jsonSchema, userOpts);
-  const result = await registry.getLatestSchema(registeredSubject);
-  console.log(result);
-  return result;
+  return await registry.getLatestSchema(registeredSubject);
 }
 
 
