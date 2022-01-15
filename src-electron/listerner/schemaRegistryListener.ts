@@ -21,7 +21,7 @@ export const listenToSchemaRegistryRepository = (socket: Socket) => {
     try {
       const result = await registryCatalog.findAll();
       callback(null, result);
-    } catch (e) {
+    } catch (e: any) {
       callback(e, null)
     }
   });
@@ -32,7 +32,7 @@ export const listenToSchemaRegistryRepository = (socket: Socket) => {
     try {
       const result = await registryCatalog.insert(registryInstance);
       callback(null, result);
-    } catch (e) {
+    } catch (e: any) {
       callback(e, null)
     }
   });
@@ -43,7 +43,7 @@ export const listenToSchemaRegistryRepository = (socket: Socket) => {
     try {
       const result = await registryCatalog.update(registryInstance);
       callback(null, result);
-    } catch (e) {
+    } catch (e: any) {
       callback(e, null)
     }
   });
@@ -55,7 +55,7 @@ export const listenToSchemaRegistryRepository = (socket: Socket) => {
       await updateRegistryInstanceUrl(registryInstance);
       const result = registry.connect(registryInstance);
       callback(null, result);
-    } catch (e) {
+    } catch (e: any) {
       callback(e, null)
     }
   });
@@ -67,7 +67,7 @@ export const listenToSchemaRegistryRepository = (socket: Socket) => {
       await updateRegistryInstanceUrl(registryInstance);
       const result = await registry.getSchemas(registryInstance);
       callback(null, result);
-    } catch (e) {
+    } catch (e: any) {
       callback(e, null)
     }
   });
@@ -93,7 +93,7 @@ export const listenToSchemaRegistryRepository = (socket: Socket) => {
           break;
       }
       callback(null, result);
-    } catch (e) {
+    } catch (e: any) {
       callback(e, null)
     }
   });
@@ -104,7 +104,7 @@ export const listenToSchemaRegistryRepository = (socket: Socket) => {
     try {
       await registryCatalog.remove(schemaRegistryUUID);
       callback(null, null);
-    } catch (e) {
+    } catch (e: any) {
       callback(e, null)
     }
   });

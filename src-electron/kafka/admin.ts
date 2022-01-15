@@ -17,6 +17,11 @@ export const connect = async (brokerKafkaInstance: IBrokerKafkaInstance) => {
   const admin = serverInstance.admin(serverConfigOptions);
   try {
     await admin.connect();
+    const cluster = await admin.describeCluster();
+    if (!cluster) {
+      console.error(PLASMIDO_NODE_ADMIN, ':connect:EVENT_SENT:', "Cluster not available", brokerKafkaInstance);
+      return null;
+    }
     return admin;
   } catch (error) {
     console.error(PLASMIDO_NODE_ADMIN, ':connect:EVENT_SENT:', error, brokerKafkaInstance);

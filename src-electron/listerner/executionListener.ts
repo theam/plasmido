@@ -17,7 +17,7 @@ export const listenToExecution = (socket: Socket, io: Server) => {
     try {
       const startedWorkbook = await workbook.start(workbookInstance, io);
       callback(null, startedWorkbook);
-    } catch (e) {
+    } catch (e: any) {
       callback(e, null)
     }
   });
@@ -27,7 +27,7 @@ export const listenToExecution = (socket: Socket, io: Server) => {
     try {
       const stoppedWorkbook = await workbook.stop(workbookInstance, io);
       callback(null, stoppedWorkbook);
-    } catch (e) {
+    } catch (e: any) {
       callback(e, null)
     }
   });
@@ -38,7 +38,7 @@ export const listenToExecution = (socket: Socket, io: Server) => {
       const resultWorkbook = await executionsWorkbook.removeAll();
       const resultArtifact = await executionsArtifact.removeAll();
       callback(null, resultWorkbook && resultArtifact);
-    } catch (e) {
+    } catch (e: any) {
       callback(e, null)
     }
   });
@@ -54,7 +54,7 @@ export const listenToExecution = (socket: Socket, io: Server) => {
     try {
       const result = await executionsConsumed.getConsumedAllByArtifact(options.artifactUUID, options.filter, options.startRow, options.count);
       callback(null, result);
-    } catch (e) {
+    } catch (e: any) {
       callback(e, null)
     }
   });
@@ -68,7 +68,7 @@ export const listenToExecution = (socket: Socket, io: Server) => {
     try {
       const result = await executionsConsumed.getConsumedCountByArtifact(options.artifactUUID, options.filter);
       callback(null, result);
-    } catch (e) {
+    } catch (e: any) {
       callback(e, null)
     }
   });
