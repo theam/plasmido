@@ -4,10 +4,10 @@ import {Events} from '../enums/Events';
 import * as registryCatalog from '../nedb/schema-registry-catalog';
 import * as registry from '../kafka/schemaRegistry';
 import {ISchemaRegistry} from '../interfaces/schemaRegistry/ISchemaRegistry';
-import {ExtendedAvroSchema} from '@theagilemonkeys/plasmido-schema-registry/dist/@types';
 import {SchemaRegistry} from '@theagilemonkeys/plasmido-schema-registry';
 import {defaultUserVariables, replaceUserVariables} from '../environment/variables';
 import {SchemaType} from "../enums/SchemaType";
+import { SubjectSchema } from '@theagilemonkeys/plasmido-schema-registry/dist/ExtendedSchemaRegistry'
 
 export const listenToSchemaRegistryRepository = (socket: Socket) => {
 
@@ -60,9 +60,21 @@ export const listenToSchemaRegistryRepository = (socket: Socket) => {
     }
   });
 
+  socket.on(Events.PLASMIDO_INPUT_SCHEMA_REGISTRY_GET_SUBJECTS_SYNC, async (registryInstance: ISchemaRegistry,
+                                                                           callback: (error: Error | null,
+                                                                                      subjects: Array<string> | null) => void) => {
+    try {
+      await updateRegistryInstanceUrl(registryInstance);
+      const result = await registry.getSubjects(registryInstance);
+      callback(null, result);
+    } catch (e: any) {
+      callback(e, null)
+    }
+  });
+
   socket.on(Events.PLASMIDO_INPUT_SCHEMA_REGISTRY_GET_SCHEMAS_SYNC, async (registryInstance: ISchemaRegistry,
                                                                            callback: (error: Error | null,
-                                                                                      schemas: Array<ExtendedAvroSchema> | null) => void) => {
+                                                                                      schemas: Array<SubjectSchema> | null) => void) => {
     try {
       await updateRegistryInstanceUrl(registryInstance);
       const result = await registry.getSchemas(registryInstance);
@@ -80,7 +92,7 @@ export const listenToSchemaRegistryRepository = (socket: Socket) => {
       schemaType: SchemaType
     },
     callback: (error: Error | null,
-               schema: ExtendedAvroSchema | null) => void) => {
+               schema: SubjectSchema | null) => void) => {
     try {
       await updateRegistryInstanceUrl(options.registryInstance);
       let result;

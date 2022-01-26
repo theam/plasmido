@@ -100,9 +100,10 @@ import {ISchemaRegistry} from 'src/interfaces/schemaRegistry/ISchemaRegistry';
 import useSchemaRegistry from 'src/composables/useSchemaRegistry';
 import {syntaxHighlight} from 'src/global';
 import NewSchemaDialog from 'components/schemas/NewSchemaDialog.vue';
-import {AvroSchema, ExtendedAvroSchema} from '@theagilemonkeys/plasmido-schema-registry/dist/@types';
+import {AvroSchema } from '@theagilemonkeys/plasmido-schema-registry/dist/@types';
 import {Schema} from '@theagilemonkeys/plasmido-schema-registry/src/@types';
 import {SchemaType} from 'src/enums/SchemaType';
+import { SubjectSchema } from '@theagilemonkeys/plasmido-schema-registry/dist/ExtendedSchemaRegistry'
 
 const schemaCreatedNotifyOptions = () => ({
   color: 'green-4',
@@ -132,7 +133,7 @@ export default defineComponent({
     const columns = [
       {
         name: 'subject', required: true, label: 'Subject', align: 'left', sortable: true,
-        field(row: ExtendedAvroSchema) {
+        field(row: SubjectSchema) {
           return row.subject || (row.schema as AvroSchema).name;
         },
         format(val: string) {
@@ -186,7 +187,7 @@ export default defineComponent({
 
     const localSchemas = computed(() => {
       return schemas.value.map(schema => {
-        const resultSchema = {...schema} as ExtendedAvroSchema;
+        const resultSchema = schema as SubjectSchema;
         const internalSchema = schema.schema as Schema | AvroSchema;
         if (isJsonSchema(internalSchema)) {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment

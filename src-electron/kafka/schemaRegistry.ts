@@ -3,23 +3,19 @@ import { ISchemaRegistry } from '../interfaces/schemaRegistry/ISchemaRegistry'
 import { SchemaRegistrySecurityProtocol } from '../enums/SchemaRegistrySecurityProtocol'
 import * as schemaRegistryCatalog from '../nedb/schema-registry-catalog'
 import { IWorkbook } from '../interfaces/workbooks/IWorkbook'
-import {
-  AvroConfluentSchema,
-  AvroOptions,
-  ExtendedAvroSchema,
-  JsonConfluentSchema,
-  JsonOptions,
-  ProtoOptions,
-  SchemaRegistryAPIClientOptions,
-  SchemaType
-} from '@theagilemonkeys/plasmido-schema-registry/dist/@types'
 import { SchemaRegistryAPIClientArgs } from '@theagilemonkeys/plasmido-schema-registry/dist/api'
-import { SchemaRegistry } from '@theagilemonkeys/plasmido-schema-registry'
+import { ExtendedSchemaRegistry, SchemaRegistry, SchemaType } from '@theagilemonkeys/plasmido-schema-registry'
 import { RetryMiddlewareOptions } from 'mappersmith/middleware/retry/v2'
 import { Authorization } from 'mappersmith'
 import { ArtifactSchemaType } from '../enums/ArtifactSchemaType'
 import { replaceUserVariables } from '../environment/variables'
 import { Replaceable } from '../interfaces/environment/Replaceable'
+import { SubjectSchema } from '@theagilemonkeys/plasmido-schema-registry/dist/ExtendedSchemaRegistry'
+import {
+  AvroConfluentSchema,
+  AvroOptions, AvroSchema,
+  JsonConfluentSchema, JsonOptions, ProtoOptions, Schema, SchemaRegistryAPIClientOptions
+} from '@theagilemonkeys/plasmido-schema-registry/dist/@types'
 
 const DEFAULT_SCHEMA_REGISTRY_RETRY_OPTIONS = {
   maxRetryTimeInSecs: 5,
@@ -46,7 +42,7 @@ const schemaRegistryAPIClientOptions = {
   [SchemaType.PROTOBUF]: DEFAULT_SCHEMA_REGISTRY_PROTOBUF_OPTIONS
 } as SchemaRegistryAPIClientOptions;
 
-export const connect = (schemaRegistry: ISchemaRegistry): SchemaRegistry => {
+export const connect = (schemaRegistry: ISchemaRegistry): ExtendedSchemaRegistry => {
   let authorization = null;
 
   const schemaRegistryAPIClientArgs = {
@@ -64,19 +60,17 @@ export const connect = (schemaRegistry: ISchemaRegistry): SchemaRegistry => {
   }
 
   const userOpts = cloneDeep(schemaRegistryAPIClientOptions);
-  return new SchemaRegistry(schemaRegistryAPIClientArgs, userOpts);
+  return new ExtendedSchemaRegistry(schemaRegistryAPIClientArgs, userOpts);
 };
 
-export const getSchemas = async (schemaRegistry: ISchemaRegistry) => {
+export const getSubjects = async (schemaRegistry: ISchemaRegistry): Promise<Array<string>> => {
   const registry = connect(schemaRegistry);
-  const schemas = await registry.getSchemas();
-  const latestSchemas = [] as Array<ExtendedAvroSchema>;
-  schemas.sort((a: ExtendedAvroSchema, b: ExtendedAvroSchema) => b.version - a.version);
-  schemas.forEach(newSchema => {
-    const exists = latestSchemas.some(existingSchema => existingSchema.subject === newSchema.subject);
-    if (!exists) latestSchemas.push(newSchema);
-  });
-  return latestSchemas.sort((a, b) => a.subject.localeCompare(b.subject));
+  return await registry.getSubjects();
+}
+
+export const getSchemas = async (schemaRegistry: ISchemaRegistry): Promise<Array<SubjectSchema>> => {
+  const registry = connect(schemaRegistry);
+  return await registry.getAllLatestSchemas();
 }
 
 export const connectAllSchemaRegistries = async (workbook: IWorkbook, userVariables: Array<Replaceable>) => {
@@ -98,20 +92,25 @@ export const connectAllSchemaRegistries = async (workbook: IWorkbook, userVariab
 
 export const saveAvroSchema = async (schemaRegistry: ISchemaRegistry,
                                      schema: string,
-                                     subject?: string) => {
+                                     subject?: string): Promise<SubjectSchema> => {
   const registry = connect(schemaRegistry);
   const formattedSchema = schema.replace(/\r\n|\r|\n/g, ' ');
   const avroSchema = {type: SchemaType.AVRO, schema: formattedSchema} as AvroConfluentSchema;
   const userOpts = {
     subject: subject
   }
-  const {id: _, subject: registeredSubject} = await registry.register(avroSchema, userOpts);
-  return await registry.getLatestSchema(registeredSubject);
+  const registeredSchema = await registry.register(avroSchema, userOpts);
+  const newSchema = await registry.getSchema(registeredSchema.id)
+  return {
+    subject: subject,
+    schema: newSchema,
+    schemaId: registeredSchema.id
+  } as SubjectSchema;
 }
 
 export const saveJsonSchema = async (schemaRegistry: ISchemaRegistry,
                                      schema: string,
-                                     subject: string) => {
+                                     subject: string): Promise<SubjectSchema> => {
   const registry = connect(schemaRegistry);
   const formattedSchema = schema.replace(/\r\n|\r|\n/g, ' ');
 
@@ -119,8 +118,13 @@ export const saveJsonSchema = async (schemaRegistry: ISchemaRegistry,
     subject: subject || ''
   }
   const jsonSchema = {type: SchemaType.JSON, schema: formattedSchema} as JsonConfluentSchema;
-  const {id: _, subject: registeredSubject} = await registry.register(jsonSchema, userOpts);
-  return await registry.getLatestSchema(registeredSubject);
+  const registeredSchema = await registry.register(jsonSchema, userOpts);
+  const newSchema = await registry.getSchema(registeredSchema.id)
+  return {
+    subject: subject,
+    schema: newSchema,
+    schemaId: registeredSchema.id
+  } as SubjectSchema;
 }
 
 

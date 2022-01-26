@@ -51,6 +51,7 @@ import {
   ISchemaRegistrySelector,
   schemaRegistryToSchemaRegistrySelector
 } from 'src/interfaces/selectors/ISchemaRegistrySelector';
+import { SubjectSchema } from '@theagilemonkeys/plasmido-schema-registry/dist/ExtendedSchemaRegistry'
 
 export default defineComponent({
   name: 'SchemaRegistrySubjectSelector',
@@ -80,7 +81,10 @@ export default defineComponent({
     });
 
     const schemaRegistriesSelector = computed(() => schemasRegistries.value?.map(schemaRegistry => schemaRegistryToSchemaRegistrySelector(schemaRegistry)));
-    const subjectSelector = computed(() => schemas.value?.map(schema => subjectToSubjectSelector(schema.subject, schema.id)));
+    const subjectSelector = computed(() => schemas.value?.map(schema => {
+      const s = schema as SubjectSchema
+      return subjectToSubjectSelector(s.subject, s.schemaId)
+    }));
     const disableSubjects = computed(() => isSelectedSchemaRegistryEmpty.value || schemas.value?.length === 0);
 
     const onSelectedSchemaRegistryUpdated = async (prevValue: ISchemaRegistrySelector | null) => {

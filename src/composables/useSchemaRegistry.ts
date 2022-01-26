@@ -2,12 +2,12 @@ import {readonly, ref} from 'vue';
 import {ISchemaRegistry} from 'src/interfaces/schemaRegistry/ISchemaRegistry';
 import {syncEmit} from 'src/global';
 import {Events} from 'src/enums/Events';
-import {SchemaRegistry} from '@theagilemonkeys/plasmido-schema-registry';
-import {AvroSchema, ExtendedAvroSchema, Schema} from '@theagilemonkeys/plasmido-schema-registry/dist/@types';
+import {AvroSchema, Schema} from '@theagilemonkeys/plasmido-schema-registry/dist/@types';
 import JsonSchema from '@theagilemonkeys/plasmido-schema-registry/dist/JsonSchema';
 import {SchemaType} from 'src/enums/SchemaType';
+import { SubjectSchema } from '@theagilemonkeys/plasmido-schema-registry/dist/ExtendedSchemaRegistry'
 
-const schemas = ref([] as Array<ExtendedAvroSchema>);
+const schemas = ref([] as Array<SubjectSchema>);
 
 export default function useSchemaRegistry() {
   const connecting = ref(false);
@@ -19,12 +19,22 @@ export default function useSchemaRegistry() {
   const connect = async (registry: ISchemaRegistry) => {
     resetConnection();
     connecting.value = true;
-    const schemaRegistry = await syncEmit(Events.PLASMIDO_INPUT_SCHEMA_REGISTRY_CONNECT_SYNC, registry) as SchemaRegistry;
-    connected.value = schemaRegistry !== null;
-    connectingSchemaRegistryError.value = schemaRegistry === null;
-    connecting.value = false;
+    try {
+      const subjects = await syncEmit(Events.PLASMIDO_INPUT_SCHEMA_REGISTRY_GET_SUBJECTS_SYNC, registry) as Array<string>;
+      connected.value = true;
+      connectingSchemaRegistryError.value = false;
+    } catch (e) {
+      connected.value = false;
+      connectingSchemaRegistryError.value = true;
+    } finally {
+      connecting.value = false;
+    }
     return registry;
   };
+
+  const getSubjects = async(registry: ISchemaRegistry | undefined): Promise<Array<string>> => {
+    return await syncEmit(Events.PLASMIDO_INPUT_SCHEMA_REGISTRY_GET_SUBJECTS_SYNC, registry) as Array<string>;
+  }
 
   const getSchemas = async (registry: ISchemaRegistry | undefined) => {
     try {
@@ -32,8 +42,8 @@ export default function useSchemaRegistry() {
       if (!registry) {
         return;
       }
+      const result = await syncEmit(Events.PLASMIDO_INPUT_SCHEMA_REGISTRY_GET_SCHEMAS_SYNC, registry) as Array<SubjectSchema>;
       schemas.value.length = 0;
-      const result = await syncEmit(Events.PLASMIDO_INPUT_SCHEMA_REGISTRY_GET_SCHEMAS_SYNC, registry) as Array<ExtendedAvroSchema>;
       result.forEach(value => {
         schemas.value.push(value);
       });
@@ -56,13 +66,13 @@ export default function useSchemaRegistry() {
       schema: schema,
       schemaType: schemaType
     };
-    const savedSchema = await syncEmit(Events.PLASMIDO_INPUT_SCHEMA_REGISTRY_SAVE_SYNC, parameters) as ExtendedAvroSchema;
+    const savedSchema = await syncEmit(Events.PLASMIDO_INPUT_SCHEMA_REGISTRY_SAVE_SYNC, parameters) as SubjectSchema;
 
     if (!savedSchema) {
       console.error('Could not create schema');
     }
-    await getSchemas(registry);
 
+    schemas.value.push(savedSchema)
     schemaInserted.value = true;
     return savedSchema;
   };
@@ -92,7 +102,8 @@ export default function useSchemaRegistry() {
     saveSchema,
     resetSchemas,
     isAvroSchema,
-    isJsonSchema
+    isJsonSchema,
+    getSubjects
   }
 }
 
