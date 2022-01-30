@@ -1,8 +1,8 @@
-import {ArtifactType} from 'app/src/enums/ArtifactType';
-import {IHeaders} from 'kafkajs';
-import {ConsumeFromType} from 'src/enums/ConsumeFromType';
-import {ArtifactSchemaType} from 'src/enums/ArtifactSchemaType';
-import {ArtifactTextFormat} from 'src/enums/ArtifactTextFormat';
+import {ArtifactType} from 'app/src/enums/ArtifactType'
+import {IHeaders} from 'kafkajs'
+import {ConsumeFromType} from 'src/enums/ConsumeFromType'
+import {ArtifactSchemaType} from 'src/enums/ArtifactSchemaType'
+import {ArtifactTextFormat} from 'src/enums/ArtifactTextFormat'
 
 export interface IArtifactPayloadSchema {
   schemaRegistryId?: string,

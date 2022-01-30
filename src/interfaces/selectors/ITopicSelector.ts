@@ -4,11 +4,11 @@ export interface ITopicSelector {
 }
 
 export const topicToTopicSelector = (topicName: string | undefined) => {
-  if (topicName === undefined || topicName === '') return null;
+  if (topicName === undefined || topicName === '') return null
   return {
     label: topicName,
     value: topicName
-  } as ITopicSelector;
+  } as ITopicSelector
 }
 
 

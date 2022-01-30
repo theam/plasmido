@@ -1,7 +1,7 @@
-import {app, BrowserWindow, nativeTheme} from 'electron';
-import path from 'path';
-import DEBUG from './utils/debug';
-import PKG from '../package.json';
+import {app, BrowserWindow, nativeTheme} from 'electron'
+import path from 'path'
+import { debugEnabled } from './utils/debug'
+import PKG from '../package.json'
 
 // TODO Fix DevTools Extensions
 try {
@@ -12,15 +12,15 @@ try {
 }
 
 // Fix the source map. Use content scripts for node code, page for vue
-if (DEBUG) {
+if (debugEnabled()) {
   const sourceMapSupport = require('source-map-support'); // eslint-disable-line
   sourceMapSupport.install(); // eslint-disable-line
 }
 
 // Enable electron debug
-if (DEBUG) {
+if (debugEnabled()) {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-var-requires
-  require('electron-debug')(); // eslint-disable-line global-require
+  require('electron-debug')() // eslint-disable-line global-require
   const path = require('path'); // eslint-disable-line
   const p = path.join(__dirname, '..', 'app', 'node_modules'); // eslint-disable-line
   require('module').globalPaths.push(p); // eslint-disable-line
@@ -31,29 +31,29 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
   }
-});
+})
 
 // Install vuejs3 devtools
 const installExtensions = async () => {
-  if (DEBUG) {
+  if (debugEnabled()) {
     // eslint-disable-next-line @typescript-eslint/no-var-requires,@typescript-eslint/no-unsafe-assignment
-    const installer = require('electron-devtools-installer'); // eslint-disable-line global-require
+    const installer = require('electron-devtools-installer') // eslint-disable-line global-require
 
     const extensions = [
       'VUEJS3_DEVTOOLS'
-    ];
-    const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
+    ]
+    const forceDownload = !!process.env.UPGRADE_EXTENSIONS
     for (const name of extensions) { // eslint-disable-line
       try {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
-        await installer.default(installer[name], forceDownload);
+        await installer.default(installer[name], forceDownload)
       } catch (e) {
       } // eslint-disable-line
     }
   }
-};
+}
 
-let mainWindow;
+let mainWindow
 
 const createWindow = () => {
   /**
@@ -72,32 +72,32 @@ const createWindow = () => {
     }
   })
 
-  mainWindow.maximize();
+  mainWindow.maximize()
   mainWindow.loadURL(process.env.APP_URL)
 
   mainWindow.on('closed', () => {
     mainWindow = null
-  });
+  })
 
   // Show developer tools
-  if (DEBUG) {
+  if (debugEnabled()) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     // mainWindow.openDevTools();
-    mainWindow.webContents.openDevTools();
+    mainWindow.webContents.openDevTools()
   } else {
-    // we're on production; no access to devtools
+  //   we're on production; no access to devtools
     mainWindow.webContents.on('devtools-opened', () => {
-      mainWindow.webContents.closeDevTools();
-    });
+      mainWindow.webContents.closeDevTools()
+    })
   }
-};
+}
 
 // eslint-disable-next-line @typescript-eslint/no-misused-promises
 app.on('ready', async () => {
-  await installExtensions();
-  createWindow();
-  if (DEBUG) console.info('Electron app ready.');
-});
+  await installExtensions()
+  createWindow()
+  if (debugEnabled()) console.info('Electron app ready.')
+})
 
 // Set about options
 if (typeof app.setAboutPanelOptions === 'function') {
@@ -106,13 +106,13 @@ if (typeof app.setAboutPanelOptions === 'function') {
     applicationVersion: PKG.version,
     copyright: 'Copyright (C) 2021 theagilemonkeys.com',
     credits: 'Licence: ' + PKG.license,
-    version: DEBUG ? '[debug]' : ''
-  });
+    version: debugEnabled() ? '[debug]' : ''
+  })
 }
 
 app.on('activate', () => {
   if (mainWindow === null) {
     createWindow()
   }
-  if (DEBUG) console.info('Electron app activate.');
+  if (debugEnabled()) console.info('Electron app activate.')
 })

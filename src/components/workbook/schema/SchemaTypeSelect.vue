@@ -9,9 +9,9 @@
 </template>
 
 <script lang="ts">
-import {defineComponent, PropType, ref, watch} from 'vue';
-import {SchemaType, SchemaTypeDescription} from 'src/enums/SchemaType';
-import {schemaTypeToArtifactSchemaTypeSelector} from 'src/interfaces/selectors/ISchemaTypeSelector';
+import {defineComponent, PropType, ref, watch} from 'vue'
+import {SchemaType, SchemaTypeDescription} from 'src/enums/SchemaType'
+import {schemaTypeToArtifactSchemaTypeSelector} from 'src/interfaces/selectors/ISchemaTypeSelector'
 
 export default defineComponent({
   name: 'SchemaTypeSelect',
@@ -28,16 +28,16 @@ export default defineComponent({
       .map(value => ({
       label: SchemaTypeDescription[value as keyof typeof SchemaTypeDescription],
       value: value
-    }));
-    const localFormatArtifact = ref(schemaTypeToArtifactSchemaTypeSelector(props.formatArtifact));
+    }))
+    const localFormatArtifact = ref(schemaTypeToArtifactSchemaTypeSelector(props.formatArtifact))
 
-    watch(() => localFormatArtifact.value, (newValue) => context.emit('schemaTypeChanged', newValue));
-    watch(() => props.formatArtifact, (newValue) => localFormatArtifact.value = schemaTypeToArtifactSchemaTypeSelector(newValue));
+    watch(() => localFormatArtifact.value, (newValue) => context.emit('schemaTypeChanged', newValue))
+    watch(() => props.formatArtifact, (newValue) => localFormatArtifact.value = schemaTypeToArtifactSchemaTypeSelector(newValue))
 
     return {
       localFormatArtifact,
       options
     }
   }
-});
+})
 </script>

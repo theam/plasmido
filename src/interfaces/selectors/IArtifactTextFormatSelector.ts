@@ -1,4 +1,4 @@
-import {ArtifactTextFormat, ArtifactTextFormatDescription} from 'src/enums/ArtifactTextFormat';
+import {ArtifactTextFormat, ArtifactTextFormatDescription} from 'src/enums/ArtifactTextFormat'
 
 export interface IArtifactTextFormatSelector {
   label: string,
@@ -6,7 +6,7 @@ export interface IArtifactTextFormatSelector {
 }
 
 export const artifactTextFormatToArtifactTextFormatSelector = (artifactTextFormat: string) => {
-  if (artifactTextFormat === null || artifactTextFormat === undefined) return null;
+  if (artifactTextFormat === null || artifactTextFormat === undefined) return null
   return {
     label: ArtifactTextFormatDescription[artifactTextFormat as keyof typeof ArtifactTextFormatDescription],
     value: artifactTextFormat

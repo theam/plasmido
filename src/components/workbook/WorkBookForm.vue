@@ -98,49 +98,49 @@
 </template>
 
 <script lang="ts">
-import {defineComponent, onMounted, provide, ref, watch} from 'vue';
-import ProducerForm from 'components/workbook/producer/ProducerForm.vue';
-import StartStopButton from 'components/workbook/StartStopButton.vue';
-import TitleEditor from 'components/workbook/title/TitleEditor.vue';
-import {QDialogOptions, useQuasar} from 'quasar';
+import {defineComponent, onMounted, provide, ref, watch} from 'vue'
+import ProducerForm from 'components/workbook/producer/ProducerForm.vue'
+import StartStopButton from 'components/workbook/StartStopButton.vue'
+import TitleEditor from 'components/workbook/title/TitleEditor.vue'
+import {QDialogOptions, useQuasar} from 'quasar'
 import {
   useRoute,
   useRouter,
   onBeforeRouteLeave,
   onBeforeRouteUpdate,
-} from 'vue-router';
-import useWorkbooksRepository from 'src/composables/useWorkbooksRepository';
-import ConsumerForm from 'components/workbook/consumer/ConsumerForm.vue';
-import NewArtifact from 'components/workbook/NewArtifact.vue';
-import useExecution from 'src/composables/useExecution';
-import {WorkBookStatus} from 'src/enums/WorkBookStatus';
-import {IWorkbook} from 'src/interfaces/workbooks/IWorkbook';
-import ConfirmExitDialog from 'components/ConfirmExitDialog.vue';
-import {IArtifact} from 'src/interfaces/workbooks/IArtifact';
-import {ArtifactType} from 'src/enums/ArtifactType';
+} from 'vue-router'
+import useWorkbooksRepository from 'src/composables/useWorkbooksRepository'
+import ConsumerForm from 'components/workbook/consumer/ConsumerForm.vue'
+import NewArtifact from 'components/workbook/NewArtifact.vue'
+import useExecution from 'src/composables/useExecution'
+import {WorkBookStatus} from 'src/enums/WorkBookStatus'
+import {IWorkbook} from 'src/interfaces/workbooks/IWorkbook'
+import ConfirmExitDialog from 'components/ConfirmExitDialog.vue'
+import {IArtifact} from 'src/interfaces/workbooks/IArtifact'
+import {ArtifactType} from 'src/enums/ArtifactType'
 
 const savedNotifyOptions = (name: string) => ({
   color: 'green-4',
   textColor: 'white',
   icon: 'cloud_done',
   message: 'Workbook `' + name + '` saved'
-});
+})
 
 const confirmDialogOptions = () => ({
   component: ConfirmExitDialog,
   componentProps: {}
-} as QDialogOptions);
+} as QDialogOptions)
 
 
 export default defineComponent({
   name: 'WorkBookForm',
   components: {TitleEditor, ProducerForm, ConsumerForm, NewArtifact, StartStopButton},
   setup() {
-    const $q = useQuasar();
-    const router = useRouter();
-    const route = useRoute();
-    const workbookId = route.params.id as string;
-    const selectedTabArtifact = ref('');
+    const $q = useQuasar()
+    const router = useRouter()
+    const route = useRoute()
+    const workbookId = route.params.id as string
+    const selectedTabArtifact = ref('')
 
     const {
       currentWorkbook,
@@ -164,7 +164,7 @@ export default defineComponent({
       deleteArtifact,
       hasChanges,
       resetWorkbook
-    } = useWorkbooksRepository();
+    } = useWorkbooksRepository()
 
     const {
       currentExecutionStatus,
@@ -176,107 +176,107 @@ export default defineComponent({
       stopWorkbook,
       getConsumedByArtifact,
       getConsumedCountByArtifact
-    } = useExecution();
+    } = useExecution()
 
     onMounted(() => {
-      initWorkbook(workbookId);
-    });
+      initWorkbook(workbookId)
+    })
 
     const stopIfNeeded = async () => {
       try {
         if (currentWorkbook.value?._id !== '' && currentExecutionStatus.value !== WorkBookStatus.STOPPED) {
-          const workbook = {...currentWorkbook.value} as IWorkbook;
-          await stopWorkbook(workbook);
+          const workbook = {...currentWorkbook.value} as IWorkbook
+          await stopWorkbook(workbook)
         }
       } catch (e) {
-        console.error('Couldn\'t stop workbook', e);
+        console.error('Couldn\'t stop workbook', e)
       }
-    };
+    }
 
     const asyncConfirmExistDialog = () => new Promise((resolve) => {
       $q.dialog(confirmDialogOptions())
         .onOk((dialogResult: { action: string }) => {
           if (dialogResult.action === 'ok') {
-            void saveWorkbook();
+            void saveWorkbook()
           } else {
-            resetWorkbook();
+            resetWorkbook()
           }
-          resolve(true);
+          resolve(true)
         })
-        .onDismiss(() => resolve(false));
-    });
+        .onDismiss(() => resolve(false))
+    })
 
     const checkExit = async () => {
-      let result = true;
+      let result = true
       if (hasChanges.value) {
-        const confirm = !!(await asyncConfirmExistDialog());
+        const confirm = !!await asyncConfirmExistDialog()
         if (confirm) {
-          await stopIfNeeded();
+          await stopIfNeeded()
         }
-        return confirm;
+        return confirm
       } else {
-        await stopIfNeeded();
+        await stopIfNeeded()
       }
-      return result;
-    };
+      return result
+    }
 
     onBeforeRouteLeave(async () => {
-      return await checkExit();
-    });
+      return await checkExit()
+    })
 
     onBeforeRouteUpdate(async () => {
-      return await checkExit();
-    });
+      return await checkExit()
+    })
 
 
     const onWorkbookTitleChanged = (newName: string) => {
-      updateWorkbookName(newName);
+      updateWorkbookName(newName)
     }
 
     watch(inserted, () => {
       if (inserted.value) {
-        $q.notify(savedNotifyOptions(currentWorkbook.value.name));
-        void router.push({name: 'workbook_path', params: {id: currentWorkbook.value._id}});
+        $q.notify(savedNotifyOptions(currentWorkbook.value.name))
+        void router.push({name: 'workbook_path', params: {id: currentWorkbook.value._id}})
       }
-    });
+    })
 
     watch(updated, () => {
-      if (updated.value) $q.notify(savedNotifyOptions(currentWorkbook.value.name));
-    });
+      if (updated.value) $q.notify(savedNotifyOptions(currentWorkbook.value.name))
+    })
 
     watch(currentArtifact, () => {
       if (currentArtifact.value !== '') {
-        selectedTabArtifact.value = currentArtifact.value;
+        selectedTabArtifact.value = currentArtifact.value
       }
-    });
+    })
 
     const changeWorkbookStatus = async () => {
-      const workbook = {...currentWorkbook.value} as IWorkbook;
+      const workbook = {...currentWorkbook.value} as IWorkbook
       if (currentExecutionStatus.value === WorkBookStatus.STOPPED) {
-        await startWorkbook(workbook);
+        await startWorkbook(workbook)
       } else {
-        await stopWorkbook(workbook);
+        await stopWorkbook(workbook)
       }
     }
 
     const consumedEventForArtifact = (artifactUUID: string) => {
-      const filter = consumedEventsCount.value?.filter(value => value.artifactUUID === artifactUUID);
+      const filter = consumedEventsCount.value?.filter(value => value.artifactUUID === artifactUUID)
       if (filter && filter.length > 0) {
-        return filter[0].size;
+        return filter[0].size
       }
-      return 0;
-    };
+      return 0
+    }
 
     const producedEventForArtifact = (artifactUUID: string) => {
       if (currentExecutionStatus.value === WorkBookStatus.STOPPED) {
-        return 0;
+        return 0
       }
-      const filter = producedEventsCount.value?.filter(value => value.artifactUUID === artifactUUID);
+      const filter = producedEventsCount.value?.filter(value => value.artifactUUID === artifactUUID)
       if (filter && filter.length > 0) {
-        return filter[0].size;
+        return filter[0].size
       }
-      return 0;
-    };
+      return 0
+    }
 
     const onDeleteArtifact = (artifactUUID: string) => {
       $q.dialog({
@@ -285,25 +285,25 @@ export default defineComponent({
         cancel: true,
         persistent: true
       }).onOk(() => {
-        deleteArtifact(artifactUUID);
-      });
+        deleteArtifact(artifactUUID)
+      })
     }
 
     const onCloneArtifact = (artifactUUID: string) => {
-      cloneArtifact(artifactUUID);
+      cloneArtifact(artifactUUID)
     }
 
     const artifactIco = (artifact: IArtifact) => {
-      return artifact.type === ArtifactType.PRODUCER ? 'north_east' : 'south_west';
+      return artifact.type === ArtifactType.PRODUCER ? 'north_east' : 'south_west'
     }
 
-    provide('updateProducer', updateProducer);
-    provide('updateConsumer', updateConsumer);
-    provide('cloneArtifact', onCloneArtifact);
-    provide('deleteArtifact', onDeleteArtifact);
-    provide('changeWorkbookStatus', changeWorkbookStatus);
-    provide('getConsumedByArtifact', getConsumedByArtifact);
-    provide('getConsumedCountByArtifact', getConsumedCountByArtifact);
+    provide('updateProducer', updateProducer)
+    provide('updateConsumer', updateConsumer)
+    provide('cloneArtifact', onCloneArtifact)
+    provide('deleteArtifact', onDeleteArtifact)
+    provide('changeWorkbookStatus', changeWorkbookStatus)
+    provide('getConsumedByArtifact', getConsumedByArtifact)
+    provide('getConsumedCountByArtifact', getConsumedCountByArtifact)
 
     return {
       currentWorkbook,
@@ -331,6 +331,6 @@ export default defineComponent({
       artifactIco
     }
   }
-});
+})
 </script>
 

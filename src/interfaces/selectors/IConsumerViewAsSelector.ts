@@ -1,4 +1,4 @@
-import {ConsumerViewType, ConsumerViewTypeDescription} from 'src/enums/ConsumerViewType';
+import {ConsumerViewType, ConsumerViewTypeDescription} from 'src/enums/ConsumerViewType'
 
 export interface IConsumerViewAsSelector {
   label: string,

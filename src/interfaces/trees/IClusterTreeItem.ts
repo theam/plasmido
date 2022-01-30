@@ -1,4 +1,4 @@
-import {BrokerProtocol} from 'app/src/enums/BrokerProtocol';
+import {BrokerProtocol} from 'app/src/enums/BrokerProtocol'
 
 export default interface IClusterTreeItem {
   to: string,

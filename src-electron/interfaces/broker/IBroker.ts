@@ -1,4 +1,4 @@
-import {BrokerProtocol} from '../../enums/BrokerProtocol';
+import {BrokerProtocol} from '../../enums/BrokerProtocol'
 
 export interface IBroker {
   _id?: string,

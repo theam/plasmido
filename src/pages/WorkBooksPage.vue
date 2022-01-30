@@ -5,14 +5,14 @@
 </template>
 
 <script lang="ts">
-import WorkBookTree from 'components/workbook/WorkBookTree.vue';
-import {defineComponent} from 'vue';
+import WorkBookTree from 'components/workbook/WorkBookTree.vue'
+import {defineComponent} from 'vue'
 
 export default defineComponent({
   name: 'WorkBooksPage',
   components: {WorkBookTree},
   setup() {
-    return {};
+    return {}
   }
-});
+})
 </script>

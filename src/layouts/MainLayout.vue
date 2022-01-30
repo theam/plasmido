@@ -54,8 +54,8 @@
 </template>
 
 <script lang="ts">
-import EnvironmentSelector from '../components/environment/EnvironmentSelector.vue';
-import {defineComponent} from 'vue';
+import EnvironmentSelector from '../components/environment/EnvironmentSelector.vue'
+import {defineComponent} from 'vue'
 
 export default defineComponent({
   name: 'MainLayout',
@@ -67,7 +67,7 @@ export default defineComponent({
       storage: 0.26
     }
   },
-});
+})
 </script>
 
 <style lang="sass">

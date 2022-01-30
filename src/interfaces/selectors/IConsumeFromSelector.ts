@@ -1,4 +1,4 @@
-import {ConsumeFromType, ConsumeFromTypeDescription} from 'src/enums/ConsumeFromType';
+import {ConsumeFromType, ConsumeFromTypeDescription} from 'src/enums/ConsumeFromType'
 
 export interface IConsumeFromSelector {
   label: string,

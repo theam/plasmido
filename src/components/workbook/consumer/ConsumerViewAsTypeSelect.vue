@@ -9,9 +9,9 @@
 </template>
 
 <script lang="ts">
-import {defineComponent, PropType, ref, watch} from 'vue';
-import {ConsumerViewType, ConsumerViewTypeDescription} from 'src/enums/ConsumerViewType';
-import {consumerViewToConsumerViewAsSelector} from 'src/interfaces/selectors/IConsumerViewAsSelector';
+import {defineComponent, PropType, ref, watch} from 'vue'
+import {ConsumerViewType, ConsumerViewTypeDescription} from 'src/enums/ConsumerViewType'
+import {consumerViewToConsumerViewAsSelector} from 'src/interfaces/selectors/IConsumerViewAsSelector'
 
 export default defineComponent({
   name: 'ConsumerViewAsTypeSelect',
@@ -27,16 +27,16 @@ export default defineComponent({
     const options = Object.values(ConsumerViewType).map(value => ({
       label: ConsumerViewTypeDescription[value as keyof typeof ConsumerViewType],
       value: value
-    }));
-    const localConsumerView = ref(consumerViewToConsumerViewAsSelector(props.consumerViewTypeProp));
+    }))
+    const localConsumerView = ref(consumerViewToConsumerViewAsSelector(props.consumerViewTypeProp))
 
-    watch(() => localConsumerView.value, (newValue) => context.emit('consumerViewTypeChanged', newValue));
-    watch(() => props.consumerViewTypeProp, (newValue) => localConsumerView.value = consumerViewToConsumerViewAsSelector(newValue));
+    watch(() => localConsumerView.value, (newValue) => context.emit('consumerViewTypeChanged', newValue))
+    watch(() => props.consumerViewTypeProp, (newValue) => localConsumerView.value = consumerViewToConsumerViewAsSelector(newValue))
 
     return {
       localConsumerView: localConsumerView,
       options
     }
   }
-});
+})
 </script>

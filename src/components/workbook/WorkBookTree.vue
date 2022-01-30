@@ -48,14 +48,14 @@
 </template>
 
 <script lang="ts">
-import {computed, ref} from 'vue';
-import {ArtifactType} from 'app/src/enums/ArtifactType';
-import IWorkbookTreeItem from 'src/interfaces/trees/IWorkbookTreeItem';
-import useWorkbooksRepository from 'src/composables/useWorkbooksRepository';
-import BasicOptions from 'components/workbook/artifact/BasicOptions.vue';
-import {useRouter} from 'vue-router';
-import {QDialogOptions, useQuasar} from 'quasar';
-import ConfirmDialog from 'components/ConfirmDialog.vue';
+import {computed, ref} from 'vue'
+import {ArtifactType} from 'app/src/enums/ArtifactType'
+import IWorkbookTreeItem from 'src/interfaces/trees/IWorkbookTreeItem'
+import useWorkbooksRepository from 'src/composables/useWorkbooksRepository'
+import BasicOptions from 'components/workbook/artifact/BasicOptions.vue'
+import {useRouter} from 'vue-router'
+import {QDialogOptions, useQuasar} from 'quasar'
+import ConfirmDialog from 'components/ConfirmDialog.vue'
 
 const confirmDeleteDialogOptions = () => ({
   component: ConfirmDialog,
@@ -63,25 +63,25 @@ const confirmDeleteDialogOptions = () => ({
     title: 'Confirm delete',
     description: 'Do you want to delete this workbook?'
   }
-} as QDialogOptions);
+} as QDialogOptions)
 
 export default {
   name: 'WorkBookTree',
   components: {BasicOptions},
   setup() {
-    const router = useRouter();
-    const $q = useQuasar();
-    const {workbooks, cloneWorkbook, deleteWorkbook} = useWorkbooksRepository();
+    const router = useRouter()
+    const $q = useQuasar()
+    const {workbooks, cloneWorkbook, deleteWorkbook} = useWorkbooksRepository()
 
     const workbookItems = computed(() =>
       workbooks.value.map(value => {
-        const newId = value._id || '';
-        const artifacts = value.artifacts;
-        let producersSize = 0;
-        let consumersSize = 0;
+        const newId = value._id || ''
+        const artifacts = value.artifacts
+        let producersSize = 0
+        let consumersSize = 0
         if (artifacts) {
-          producersSize = artifacts.filter(artifact => artifact.type === ArtifactType.PRODUCER).length;
-          consumersSize = artifacts.filter(artifact => artifact.type === ArtifactType.CONSUMER).length;
+          producersSize = artifacts.filter(artifact => artifact.type === ArtifactType.PRODUCER).length
+          consumersSize = artifacts.filter(artifact => artifact.type === ArtifactType.CONSUMER).length
         }
         return {
           to: `/workbooks/${newId}`,
@@ -90,21 +90,21 @@ export default {
           consumersSize: consumersSize,
           icon: '',
           uuid: value.uuid
-        } as IWorkbookTreeItem;
-      }));
+        } as IWorkbookTreeItem
+      }))
 
     const onCloneWorkbook = async (workbookUUID: string) => {
-      const newId = await cloneWorkbook(workbookUUID);
-      await router.push({name: 'workbook_path', params: {id: newId}});
+      const newId = await cloneWorkbook(workbookUUID)
+      await router.push({name: 'workbook_path', params: {id: newId}})
     }
 
     const onDeleteWorkbook = (workbookUUID: string) => {
       $q.dialog(confirmDeleteDialogOptions())
         .onOk(async () => {
-          await deleteWorkbook(workbookUUID);
-          await router.push({name: 'empty_workbook_path'});
-        });
-    };
+          await deleteWorkbook(workbookUUID)
+          await router.push({name: 'empty_workbook_path'})
+        })
+    }
 
     return {
       splitterModel: ref(25),

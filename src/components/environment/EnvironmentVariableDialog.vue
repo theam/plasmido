@@ -32,8 +32,8 @@
 
 <script lang="ts">
 import {useDialogPluginComponent} from 'quasar'
-import {computed, defineComponent, PropType, ref} from 'vue';
-import {IEnvironmentVariable} from 'src/interfaces/environment/IEnvironmentVariable';
+import {computed, defineComponent, PropType, ref} from 'vue'
+import {IEnvironmentVariable} from 'src/interfaces/environment/IEnvironmentVariable'
 
 export default defineComponent({
   name: 'EnvironmentVariableDialog',
@@ -47,26 +47,26 @@ export default defineComponent({
     ...useDialogPluginComponent.emits
   ],
   setup(props) {
-    const {dialogRef, onDialogHide, onDialogOK, onDialogCancel} = useDialogPluginComponent();
-    const duplicateMessage = ref('');
+    const {dialogRef, onDialogHide, onDialogOK, onDialogCancel} = useDialogPluginComponent()
+    const duplicateMessage = ref('')
 
-    const localName = ref(props.name);
-    const localValue = ref(props.value);
+    const localName = ref(props.name)
+    const localValue = ref(props.value)
 
     const isDuplicateName = () => {
-      const duplicateName = props.inserting && props.environmentVariables.some(value => value.name === localName.value);
-      duplicateMessage.value = duplicateName ? 'Duplicate variable' : '';
-      return duplicateName;
-    };
+      const duplicateName = props.inserting && props.environmentVariables.some(value => value.name === localName.value)
+      duplicateMessage.value = duplicateName ? 'Duplicate variable' : ''
+      return duplicateName
+    }
 
     const okButtonDisable = computed(() => {
-      const formatInvalid = (!localName.value || /\s/.test(localName.value)) || (!localValue.value || /\s/.test(localValue.value));
-      const duplicateName = isDuplicateName();
-      return formatInvalid || duplicateName;
-    });
+      const formatInvalid = !localName.value || /\s/.test(localName.value) || (!localValue.value || /\s/.test(localValue.value))
+      const duplicateName = isDuplicateName()
+      return formatInvalid || duplicateName
+    })
 
     const onOKClick = () => {
-      onDialogOK({name: localName.value, value: localValue.value});
+      onDialogOK({name: localName.value, value: localValue.value})
     }
 
     return {
@@ -80,7 +80,7 @@ export default defineComponent({
       okButtonDisable
     }
   }
-});
+})
 </script>
 
 <style scoped>

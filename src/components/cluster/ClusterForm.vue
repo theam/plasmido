@@ -41,29 +41,29 @@
 </template>
 
 <script lang="ts">
-import {defineComponent, ref, watch} from 'vue';
-import {useRoute, useRouter} from 'vue-router';
-import ClusterConfig from 'components/cluster/ClusterConfig.vue';
-import {IBroker} from 'src/interfaces/broker/IBroker';
-import TopicList from 'components/topics/TopicList.vue';
-import ClientGroupList from 'components/clients/ClientGroupList.vue';
+import {defineComponent, ref, watch} from 'vue'
+import {useRoute, useRouter} from 'vue-router'
+import ClusterConfig from 'components/cluster/ClusterConfig.vue'
+import {IBroker} from 'src/interfaces/broker/IBroker'
+import TopicList from 'components/topics/TopicList.vue'
+import ClientGroupList from 'components/clients/ClientGroupList.vue'
 
 export default defineComponent({
   name: 'ClusterForm',
   components: {ClusterConfig, TopicList, ClientGroupList},
   setup() {
-    const router = useRouter();
-    const route = useRoute();
-    const tab = ref('config');
-    const brokerId = route.params.id as string;
-    const localBroker = ref({} as IBroker);
+    const router = useRouter()
+    const route = useRoute()
+    const tab = ref('config')
+    const brokerId = route.params.id as string
+    const localBroker = ref({} as IBroker)
 
     watch(() => localBroker.value._id, () => {
-      void router.push({name: 'broker_path', params: {id: localBroker.value._id}});
-    });
+      void router.push({name: 'broker_path', params: {id: localBroker.value._id}})
+    })
 
     const onUpdatedBroker = (newBroker: IBroker) => {
-      Object.assign(localBroker.value, newBroker);
+      Object.assign(localBroker.value, newBroker)
     }
 
     return {
@@ -73,6 +73,6 @@ export default defineComponent({
       onUpdatedBroker
     }
   }
-});
+})
 </script>
 

@@ -10,10 +10,10 @@
 </template>
 
 <script lang="ts">
-import {defineComponent, nextTick, onMounted, onUnmounted, PropType, ref, watch} from 'vue';
-import JSONEditor, {JSONEditorOptions} from 'jsoneditor';
+import {defineComponent, nextTick, onMounted, onUnmounted, PropType, ref, watch} from 'vue'
+import JSONEditor, {JSONEditorOptions} from 'jsoneditor'
 import jsonrepair from 'jsonrepair'
-import {cloneDeep} from 'lodash';
+import {cloneDeep} from 'lodash'
 
 export default defineComponent({
   name: 'JsonEditor',
@@ -31,30 +31,30 @@ export default defineComponent({
     }
   },
   setup(props, context) {
-    const jsonDiv = ref(null as null | HTMLElement);
+    const jsonDiv = ref(null as null | HTMLElement)
     const jsonEditor = ref(null as null | JSONEditor)
-    const internalChange = ref(false);
-    const localOptions = ref(props.options);
+    const internalChange = ref(false)
+    const localOptions = ref(props.options)
 
     const onChange = async () => {
       try {
         if (jsonEditor.value) {
-          let json;
+          let json
           try {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-assignment
-            json = jsonEditor.value.get();
-            context.emit('jsonError', null);
+            json = jsonEditor.value.get()
+            context.emit('jsonError', null)
           } catch (e) {
-            json = jsonEditor.value.getText();
-            context.emit('jsonError', e);
+            json = jsonEditor.value.getText()
+            context.emit('jsonError', e)
           }
-          internalChange.value = true;
-          context.emit('jsonChanged', JSON.stringify(json));
-          await nextTick();
+          internalChange.value = true
+          context.emit('jsonChanged', JSON.stringify(json))
+          await nextTick()
         }
-        localOptions.value.onChange && localOptions.value.onChange();
+        localOptions.value.onChange && localOptions.value.onChange()
       } catch (err) {
-        context.emit('jsonError', err);
+        context.emit('jsonError', err)
       } finally {
         internalChange.value = false
       }
@@ -62,35 +62,35 @@ export default defineComponent({
 
     const onError = (errors: Array<unknown>) => {
       if (errors && errors.length > 0) {
-        context.emit('jsonInvalid', errors);
+        context.emit('jsonInvalid', errors)
       }
-    };
+    }
 
     const initView = () => {
       if (!jsonEditor.value) {
-        const container = jsonDiv.value;
-        const optionsBackup = cloneDeep(localOptions.value);
-        delete localOptions.value.onChange;
+        const container = jsonDiv.value
+        const optionsBackup = cloneDeep(localOptions.value)
+        delete localOptions.value.onChange
         const newOptions = Object.assign(localOptions.value, {
           onChange: onChange,
           onValidationError: onError
-        });
+        })
 
         if (container) {
-          jsonEditor.value = new JSONEditor(container, newOptions);
+          jsonEditor.value = new JSONEditor(container, newOptions)
         }
-        localOptions.value.onChange = optionsBackup.onChange;
-        localOptions.value.onValidationError = optionsBackup.onValidationError;
+        localOptions.value.onChange = optionsBackup.onChange
+        localOptions.value.onValidationError = optionsBackup.onValidationError
       }
       if (jsonEditor.value) {
         if (props.value) {
           try {
-            jsonEditor.value.set(JSON.parse(props.value as string));
+            jsonEditor.value.set(JSON.parse(props.value as string))
           } catch (e) {
-            jsonEditor.value.set(props.value);
+            jsonEditor.value.set(props.value)
           }
         } else {
-          jsonEditor.value.set({});
+          jsonEditor.value.set({})
         }
       }
     }
@@ -98,31 +98,31 @@ export default defineComponent({
     const beautify = () => {
       if (jsonEditor.value) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-assignment
-        const json = jsonEditor.value.get();
+        const json = jsonEditor.value.get()
         try {
-          const repaired = jsonrepair(JSON.stringify(json));
-          jsonEditor.value.set(JSON.parse(repaired));
+          const repaired = jsonrepair(JSON.stringify(json))
+          jsonEditor.value.set(JSON.parse(repaired))
         } catch (_) {
         }
       }
     }
 
     onMounted(() => {
-      initView();
-    });
+      initView()
+    })
 
     onUnmounted(() => {
       if (jsonEditor.value) {
-        jsonEditor.value.destroy();
-        jsonEditor.value = null;
+        jsonEditor.value.destroy()
+        jsonEditor.value = null
       }
-    });
+    })
 
     watch(() => props.value, (newValue) => {
       if (jsonEditor.value && newValue !== undefined && !internalChange.value) {
-        jsonEditor.value.set(newValue);
+        jsonEditor.value.set(newValue)
       }
-    });
+    })
 
     return {
       jsonDiv,
@@ -130,7 +130,7 @@ export default defineComponent({
       beautify
     }
   }
-});
+})
 </script>
 
 <style lang="css">

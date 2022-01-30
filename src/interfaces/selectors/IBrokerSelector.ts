@@ -1,4 +1,4 @@
-import {IBroker} from 'src/interfaces/broker/IBroker';
+import {IBroker} from 'src/interfaces/broker/IBroker'
 
 export interface IBrokerSelector {
   label: string,
@@ -7,7 +7,7 @@ export interface IBrokerSelector {
 }
 
 export const brokerToBrokerSelector = (broker: IBroker | null) => {
-  if (broker === null || broker._id === undefined) return null;
+  if (broker === null || broker._id === undefined) return null
   return {
     label: broker?.name,
     value: broker?._id,

@@ -44,12 +44,12 @@
 </template>
 
 <script lang="ts">
-import {computed, defineComponent, PropType, ref} from 'vue';
-import {IArtifact} from 'src/interfaces/workbooks/IArtifact';
-import {QDialogOptions, useQuasar} from 'quasar';
-import NewHeaderDialog from 'components/workbook/producer/NewHeaderDialog.vue';
-import {IHeaders} from 'kafkajs';
-import {IHeadersRow} from 'src/interfaces/IHeaderRow';
+import {computed, defineComponent, PropType, ref} from 'vue'
+import {IArtifact} from 'src/interfaces/workbooks/IArtifact'
+import {QDialogOptions, useQuasar} from 'quasar'
+import NewHeaderDialog from 'components/workbook/producer/NewHeaderDialog.vue'
+import {IHeaders} from 'kafkajs'
+import {IHeadersRow} from 'src/interfaces/IHeaderRow'
 
 const columns = [
   {
@@ -59,7 +59,7 @@ const columns = [
     caption: true,
     align: 'left',
     field(row: string) {
-      return row;
+      return row
     },
     format(value: string) {
       return `${value}`
@@ -73,7 +73,7 @@ const columns = [
     caption: true,
     align: 'left',
     field(row: string | Buffer | undefined) {
-      return row;
+      return row
     },
     format(value: string) {
       return `${value}`
@@ -85,7 +85,7 @@ const columns = [
     label: '',
     field: 'actions'
   }
-];
+]
 
 const addHeaderDialogOptions = (options?: {
   key?: string | number,
@@ -100,7 +100,7 @@ const addHeaderDialogOptions = (options?: {
     headers: options?.headers,
     inserting: options?.inserting
   }
-} as QDialogOptions);
+} as QDialogOptions)
 
 export default defineComponent({
   name: 'HeaderMessage',
@@ -108,39 +108,39 @@ export default defineComponent({
     artifact: {type: Object as PropType<IArtifact>, required: true}
   },
   setup(props) {
-    const $q = useQuasar();
-    const localArtifact = ref(props.artifact);
-    const loading = ref(false);
+    const $q = useQuasar()
+    const localArtifact = ref(props.artifact)
+    const loading = ref(false)
 
     const rows = computed(() => {
-      const result = [] as Array<IHeadersRow>;
+      const result = [] as Array<IHeadersRow>
       if (localArtifact.value) {
-        const arrayRows = localArtifact.value.headers || {};
+        const arrayRows = localArtifact.value.headers || {}
         Object.keys(arrayRows).forEach((key: keyof IHeaders) => {
-          const value = arrayRows[key] || '';
-          result.push({key: key, value: value});
-        });
+          const value = arrayRows[key] || ''
+          result.push({key: key, value: value})
+        })
       }
-      return result;
-    });
+      return result
+    })
 
     const addRow = () => {
-      loading.value = true;
+      loading.value = true
       if (!localArtifact.value.headers) {
-        localArtifact.value.headers = {};
+        localArtifact.value.headers = {}
       }
       $q.dialog(addHeaderDialogOptions({headers: localArtifact.value.headers}))
           .onOk((result: IHeadersRow) => {
             if (localArtifact.value?.headers) {
-              return localArtifact.value.headers[result.key] = result.value;
+              return localArtifact.value.headers[result.key] = result.value
             }
-            return null;
+            return null
           })
-          .onDismiss(() => loading.value = false);
-    };
+          .onDismiss(() => loading.value = false)
+    }
 
     const editRow = (row: IHeadersRow) => {
-      loading.value = true;
+      loading.value = true
       $q.dialog(addHeaderDialogOptions({
         key: row.key,
         value: row.value,
@@ -149,18 +149,18 @@ export default defineComponent({
       }))
           .onOk((result: IHeadersRow) => {
             if (localArtifact.value?.headers) {
-              delete localArtifact.value.headers[row.key];
-              localArtifact.value.headers[result.key] = result.value;
+              delete localArtifact.value.headers[row.key]
+              localArtifact.value.headers[result.key] = result.value
             }
           })
-          .onDismiss(() => loading.value = false);
-    };
+          .onDismiss(() => loading.value = false)
+    }
 
     const deleteRow = (row: IHeadersRow) => {
       if (localArtifact.value?.headers) {
-        confirm('Are you sure you want to delete this item?') && delete localArtifact.value.headers[row.key];
+        confirm('Are you sure you want to delete this item?') && delete localArtifact.value.headers[row.key]
       }
-    };
+    }
 
     return {
       localArtifact,
@@ -172,5 +172,5 @@ export default defineComponent({
       deleteRow
     }
   }
-});
+})
 </script>

@@ -29,7 +29,7 @@
 
 <script lang="ts">
 import {useDialogPluginComponent} from 'quasar'
-import {defineComponent} from 'vue';
+import {defineComponent} from 'vue'
 
 export default defineComponent({
   name: 'ConfirmDialog',
@@ -44,7 +44,7 @@ export default defineComponent({
     }
   },
   setup() {
-    const {dialogRef, onDialogHide, onDialogOK, onDialogCancel} = useDialogPluginComponent();
+    const {dialogRef, onDialogHide, onDialogOK, onDialogCancel} = useDialogPluginComponent()
 
     return {
       onDialogOK,
@@ -54,7 +54,7 @@ export default defineComponent({
     }
 
   }
-});
+})
 </script>
 
 

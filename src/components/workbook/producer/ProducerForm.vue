@@ -46,12 +46,12 @@
 <script lang="ts">
 import HeaderMessage from 'components/workbook/producer/HeaderMessage.vue'
 import PayloadMessage from 'components/workbook/producer/PayloadMessage.vue'
-import {defineComponent, PropType, ref, inject} from 'vue';
-import ClusterTopicSelector from 'components/workbook/cluster/ClusterTopicSelector.vue';
-import TitleEditor from 'components/workbook/title/TitleEditor.vue';
-import {IArtifact} from 'src/interfaces/workbooks/IArtifact';
-import {IBroker} from 'src/interfaces/broker/IBroker';
-import BasicOptions from 'components/workbook/artifact/BasicOptions.vue';
+import {defineComponent, PropType, ref, inject} from 'vue'
+import ClusterTopicSelector from 'components/workbook/cluster/ClusterTopicSelector.vue'
+import TitleEditor from 'components/workbook/title/TitleEditor.vue'
+import {IArtifact} from 'src/interfaces/workbooks/IArtifact'
+import {IBroker} from 'src/interfaces/broker/IBroker'
+import BasicOptions from 'components/workbook/artifact/BasicOptions.vue'
 
 export default defineComponent({
   name: 'ProducerForm',
@@ -63,42 +63,42 @@ export default defineComponent({
     total: {type: Number, default: 0}
   },
   setup(props) {
-    const artifactTabs = ref('payload');
-    const currentArtifact: IArtifact = {...props.artifact};
-    const updateProducer = inject('updateProducer') as (param: IArtifact) => string;
-    const cloneArtifact = inject('cloneArtifact') as (artifactUUID: string) => string;
-    const deleteArtifact = inject('deleteArtifact') as (artifactUUID: string) => string;
+    const artifactTabs = ref('payload')
+    const currentArtifact: IArtifact = {...props.artifact}
+    const updateProducer = inject('updateProducer') as (param: IArtifact) => string
+    const cloneArtifact = inject('cloneArtifact') as (artifactUUID: string) => string
+    const deleteArtifact = inject('deleteArtifact') as (artifactUUID: string) => string
 
     const onSelectedClusterChanged = (value: IBroker) => {
-      currentArtifact.brokerId = value._id || '';
-      onArtifactUpdated();
+      currentArtifact.brokerId = value._id || ''
+      onArtifactUpdated()
     }
 
     const onSelectedTopicChanged = (value: string) => {
-      currentArtifact.topicName = value || '';
-      onArtifactUpdated();
+      currentArtifact.topicName = value || ''
+      onArtifactUpdated()
     }
 
     const onTitleChanged = (value: string) => {
-      currentArtifact.name = value;
-      onArtifactUpdated();
+      currentArtifact.name = value
+      onArtifactUpdated()
     }
 
     const onPayloadChanged = (value: IArtifact) => {
-      Object.assign(currentArtifact, value);
-      onArtifactUpdated();
+      Object.assign(currentArtifact, value)
+      onArtifactUpdated()
     }
 
     const onArtifactUpdated = () => {
-      updateProducer(currentArtifact);
+      updateProducer(currentArtifact)
     }
 
     const onCloneArtifact = () => {
-      cloneArtifact(currentArtifact.uuid);
+      cloneArtifact(currentArtifact.uuid)
     }
 
     const onDeleteArtifact = () => {
-      deleteArtifact(currentArtifact.uuid);
+      deleteArtifact(currentArtifact.uuid)
     }
 
     return {
@@ -112,7 +112,7 @@ export default defineComponent({
       onDeleteArtifact
     }
   }
-});
+})
 </script>
 
 <style lang="sass">

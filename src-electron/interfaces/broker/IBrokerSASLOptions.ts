@@ -1,4 +1,4 @@
-import {BrokerProtocol} from 'app/src-electron/enums/BrokerProtocol';
+import {BrokerProtocol} from 'app/src-electron/enums/BrokerProtocol'
 
 export interface IBrokerSASLOptions {
     protocol: BrokerProtocol,

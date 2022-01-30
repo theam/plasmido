@@ -94,15 +94,15 @@
 </template>
 
 <script lang="ts">
-import {computed, defineComponent, onMounted, PropType, ref, watch} from 'vue';
-import {QDialogOptions, useQuasar} from 'quasar';
-import {ISchemaRegistry} from 'src/interfaces/schemaRegistry/ISchemaRegistry';
-import useSchemaRegistry from 'src/composables/useSchemaRegistry';
-import {syntaxHighlight} from 'src/global';
-import NewSchemaDialog from 'components/schemas/NewSchemaDialog.vue';
-import {AvroSchema } from '@theagilemonkeys/plasmido-schema-registry/dist/@types';
-import {Schema} from '@theagilemonkeys/plasmido-schema-registry/src/@types';
-import {SchemaType} from 'src/enums/SchemaType';
+import {computed, defineComponent, onMounted, PropType, ref, watch} from 'vue'
+import {QDialogOptions, useQuasar} from 'quasar'
+import {ISchemaRegistry} from 'src/interfaces/schemaRegistry/ISchemaRegistry'
+import useSchemaRegistry from 'src/composables/useSchemaRegistry'
+import {syntaxHighlight} from 'src/global'
+import NewSchemaDialog from 'components/schemas/NewSchemaDialog.vue'
+import {AvroSchema } from '@theagilemonkeys/plasmido-schema-registry/dist/@types'
+import {Schema} from '@theagilemonkeys/plasmido-schema-registry/src/@types'
+import {SchemaType} from 'src/enums/SchemaType'
 import { SubjectSchema } from '@theagilemonkeys/plasmido-schema-registry/dist/ExtendedSchemaRegistry'
 
 const schemaCreatedNotifyOptions = () => ({
@@ -110,7 +110,7 @@ const schemaCreatedNotifyOptions = () => ({
   textColor: 'white',
   icon: 'cloud_done',
   message: 'Schema created'
-});
+})
 
 const addSchemaDialogOptions = () => ({
   component: NewSchemaDialog,
@@ -119,7 +119,7 @@ const addSchemaDialogOptions = () => ({
     schema: '',
     schemaType: SchemaType.AVRO
   }
-} as QDialogOptions);
+} as QDialogOptions)
 
 export default defineComponent({
   name: 'SchemaList',
@@ -129,18 +129,18 @@ export default defineComponent({
   },
   emits: ['selectedSchemaChanged'],
   setup(props) {
-    const $q = useQuasar();
+    const $q = useQuasar()
     const columns = [
       {
         name: 'subject', required: true, label: 'Subject', align: 'left', sortable: true,
         field(row: SubjectSchema) {
-          return row.subject || (row.schema as AvroSchema).name;
+          return row.subject || (row.schema as AvroSchema).name
         },
         format(val: string) {
-          return `${val}`;
+          return `${val}`
         }
       }
-    ];
+    ]
 
     const {
       schemas,
@@ -149,21 +149,21 @@ export default defineComponent({
       saveSchema,
       resetConnection,
       isJsonSchema
-    } = useSchemaRegistry();
+    } = useSchemaRegistry()
 
     const loadSchemas = async () => {
-      await getSchemas(props.registry);
+      await getSchemas(props.registry)
     }
 
     onMounted(() => {
-      void loadSchemas();
-    });
+      void loadSchemas()
+    })
 
-    watch(() => props.registry, () => void loadSchemas(), {deep: true});
+    watch(() => props.registry, () => void loadSchemas(), {deep: true})
 
     watch(schemaInserted, () => {
-      if (schemaInserted.value) $q.notify(schemaCreatedNotifyOptions());
-    });
+      if (schemaInserted.value) $q.notify(schemaCreatedNotifyOptions())
+    })
 
     const openAddSchema = () => {
       $q.dialog(addSchemaDialogOptions())
@@ -172,29 +172,29 @@ export default defineComponent({
           schema: string,
           schemaType: SchemaType
         }) => {
-          const {subject, schema, schemaType} = result;
-          return void saveSchema(props.registry, subject, schema, schemaType);
-        });
-    };
+          const {subject, schema, schemaType} = result
+          return void saveSchema(props.registry, subject, schema, schemaType)
+        })
+    }
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    const highlight = (val: string) => syntaxHighlight(val);
+    const highlight = (val: string) => syntaxHighlight(val)
 
     const refreshSchemas = async () => {
-      resetConnection();
-      await loadSchemas();
+      resetConnection()
+      await loadSchemas()
     }
 
     const localSchemas = computed(() => {
       return schemas.value.map(schema => {
-        const resultSchema = schema as SubjectSchema;
-        const internalSchema = schema.schema as Schema | AvroSchema;
+        const resultSchema = schema as SubjectSchema
+        const internalSchema = schema.schema as Schema | AvroSchema
         if (isJsonSchema(internalSchema)) {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment
-          resultSchema.schema = internalSchema['validate'].schema;
+          resultSchema.schema = internalSchema['validate'].schema
         }
-        return resultSchema;
-      });
+        return resultSchema
+      })
     })
 
     return {
@@ -208,7 +208,7 @@ export default defineComponent({
       localSchemas
     }
   }
-});
+})
 </script>
 
 <style scoped lang="sass">

@@ -124,18 +124,18 @@
 </template>
 
 <script lang="ts">
-import {defineComponent, onMounted, PropType, ref, watch} from 'vue';
-import useAdminRepository from 'src/composables/useAdminRepository';
-import {IBroker} from 'src/interfaces/broker/IBroker';
-import {GroupDescription} from 'kafkajs';
-import {useQuasar} from 'quasar';
+import {defineComponent, onMounted, PropType, ref, watch} from 'vue'
+import useAdminRepository from 'src/composables/useAdminRepository'
+import {IBroker} from 'src/interfaces/broker/IBroker'
+import {GroupDescription} from 'kafkajs'
+import {useQuasar} from 'quasar'
 
 const deletingErrorNotifyOptions = (groupId: string) => ({
   color: 'red-4',
   textColor: 'white',
   icon: 'cloud_done',
   message: `Could not delete to ${groupId}`
-});
+})
 
 export default defineComponent({
   name: 'ClientGroupList',
@@ -144,40 +144,40 @@ export default defineComponent({
     showDetails: {type: Boolean, default: true}
   },
   setup(props) {
-    const $q = useQuasar();
+    const $q = useQuasar()
 
     const columns = [
       {
         name: 'groupId', required: true, label: 'groupId', align: 'left', sortable: true,
         field(row: GroupDescription) {
-          return row.groupId;
+          return row.groupId
         },
         format(val: string) {
-          return `${val}`;
+          return `${val}`
         }
       }
-    ];
+    ]
 
     const {
       groupsDescriptions,
       listGroups,
       resetGroups,
       deleteGroup
-    } = useAdminRepository();
+    } = useAdminRepository()
 
     const loadGroups = async () => {
-      await listGroups(props.broker);
+      await listGroups(props.broker)
     }
 
     onMounted(() => {
-      void loadGroups();
-    });
+      void loadGroups()
+    })
 
-    watch(() => props.broker, () => void loadGroups(), {deep: true});
+    watch(() => props.broker, () => void loadGroups(), {deep: true})
 
     const refreshGroups = async () => {
-      resetGroups();
-      await loadGroups();
+      resetGroups()
+      await loadGroups()
     }
 
     const deleteGroups = (value: string) => {
@@ -189,13 +189,13 @@ export default defineComponent({
         persistent: true
       })
           .onOk(async () => {
-            const deleteGroupsResults = await deleteGroup([value], props.broker);
+            const deleteGroupsResults = await deleteGroup([value], props.broker)
             if (deleteGroupsResults.length === 0) {
-              $q.notify(deletingErrorNotifyOptions(value));
+              $q.notify(deletingErrorNotifyOptions(value))
             }
-            return;
-          });
-    };
+            return
+          })
+    }
 
 
     return {
@@ -206,7 +206,7 @@ export default defineComponent({
       deleteGroups
     }
   }
-});
+})
 </script>
 
 <style scoped lang="sass">

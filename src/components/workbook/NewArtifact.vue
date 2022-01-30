@@ -24,8 +24,8 @@
   </div>
 </template>
 <script lang="ts">
-import {computed, defineComponent, PropType} from 'vue';
-import {IArtifact} from 'src/interfaces/workbooks/IArtifact';
+import {computed, defineComponent, PropType} from 'vue'
+import {IArtifact} from 'src/interfaces/workbooks/IArtifact'
 
 export default defineComponent({
   name: 'NewArtifact',
@@ -38,9 +38,9 @@ export default defineComponent({
 
     const showMe = computed(() => {
       return !props.workbookArtifacts || props.workbookArtifacts.length === 0
-    });
+    })
 
     return {showMe}
   }
-});
+})
 </script>

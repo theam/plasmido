@@ -5,12 +5,12 @@ export interface ISubjectSelector {
 }
 
 export const subjectToSubjectSelector = (subject: string | undefined, schemaId: number | undefined) => {
-  if (subject === undefined || subject === '') return null;
+  if (subject === undefined || subject === '') return null
   return {
     label: subject,
     value: subject,
     schemaId: schemaId
-  } as ISubjectSelector;
+  } as ISubjectSelector
 }
 
 

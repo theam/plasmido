@@ -1,5 +1,5 @@
-import {IBrokerOptions} from 'src/interfaces/broker/IBrokerOptions';
-import {IBroker} from 'src/interfaces/broker/IBroker';
+import {IBrokerOptions} from 'src/interfaces/broker/IBrokerOptions'
+import {IBroker} from 'src/interfaces/broker/IBroker'
 
 export const buildConnectionOptions = (broker:IBroker):IBrokerOptions => {
   return {
@@ -16,7 +16,7 @@ export const buildConnectionOptions = (broker:IBroker):IBrokerOptions => {
       secretAccessKey: broker.secretAccessKey,
       sessionToken: broker.sessionToken,
     }
-  };
+  }
 }
 
 

@@ -19,7 +19,7 @@
   </div>
 </template>
 <script lang="ts">
-import {defineComponent, ref, watch} from 'vue';
+import {defineComponent, ref, watch} from 'vue'
 
 export default defineComponent({
   name: 'TitleEditor',
@@ -28,16 +28,16 @@ export default defineComponent({
     titleChanged: null
   },
   setup(props, context) {
-    const localName = ref(props.name);
-    const editMode = ref(false);
+    const localName = ref(props.name)
+    const editMode = ref(false)
 
-    watch(() => localName.value, (newValue) => context.emit('titleChanged', newValue));
-    watch(() => props.name, (newValue) => localName.value = newValue);
+    watch(() => localName.value, (newValue) => context.emit('titleChanged', newValue))
+    watch(() => props.name, (newValue) => localName.value = newValue)
 
-    const editable = () => editMode.value = true;
-    const nonEditable = () => editMode.value = false;
+    const editable = () => editMode.value = true
+    const nonEditable = () => editMode.value = false
 
-    const updateLocalName = () => context.emit('titleChanged', localName.value);
+    const updateLocalName = () => context.emit('titleChanged', localName.value)
 
     return {
       localName,
@@ -47,5 +47,5 @@ export default defineComponent({
       updateLocalName
     }
   }
-});
+})
 </script>

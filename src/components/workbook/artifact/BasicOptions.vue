@@ -24,7 +24,7 @@
   </q-btn-dropdown>
 </template>
 <script lang="ts">
-import {defineComponent} from 'vue';
+import {defineComponent} from 'vue'
 
 export default defineComponent({
   name: 'BasicOptions',
@@ -37,5 +37,5 @@ export default defineComponent({
   setup() {
     return {}
   }
-});
+})
 </script>

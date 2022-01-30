@@ -9,9 +9,9 @@
 </template>
 
 <script lang="ts">
-import {defineComponent, PropType, ref, watch} from 'vue';
-import {ConsumeFromType, ConsumeFromTypeDescription} from 'src/enums/ConsumeFromType';
-import {consumeFromToConsumeFromSelector} from 'src/interfaces/selectors/IConsumeFromSelector';
+import {defineComponent, PropType, ref, watch} from 'vue'
+import {ConsumeFromType, ConsumeFromTypeDescription} from 'src/enums/ConsumeFromType'
+import {consumeFromToConsumeFromSelector} from 'src/interfaces/selectors/IConsumeFromSelector'
 
 export default defineComponent({
   name: 'ConsumeFromTypeSelect',
@@ -27,16 +27,16 @@ export default defineComponent({
     const options = Object.values(ConsumeFromType).map(value => ({
       label: ConsumeFromTypeDescription[value as keyof typeof ConsumeFromTypeDescription],
       value: value
-    }));
-    const localConsumeFrom = ref(consumeFromToConsumeFromSelector(props.consumeFromArtifact));
+    }))
+    const localConsumeFrom = ref(consumeFromToConsumeFromSelector(props.consumeFromArtifact))
 
-    watch(() => localConsumeFrom.value, (newValue) => context.emit('consumeFromTypeChanged', newValue));
-    watch(() => props.consumeFromArtifact, (newValue) => localConsumeFrom.value = consumeFromToConsumeFromSelector(newValue));
+    watch(() => localConsumeFrom.value, (newValue) => context.emit('consumeFromTypeChanged', newValue))
+    watch(() => props.consumeFromArtifact, (newValue) => localConsumeFrom.value = consumeFromToConsumeFromSelector(newValue))
 
     return {
       localConsumeFrom,
       options
     }
   }
-});
+})
 </script>

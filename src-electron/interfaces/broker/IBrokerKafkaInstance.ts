@@ -1,4 +1,4 @@
-import {IBrokerOptions} from '../../interfaces/broker/IBrokerOptions';
+import {IBrokerOptions} from '../../interfaces/broker/IBrokerOptions'
 
 export interface IBrokerKafkaInstance {
   brokerList: string,

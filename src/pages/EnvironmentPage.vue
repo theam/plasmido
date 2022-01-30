@@ -5,14 +5,14 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
-import EnvironmentTree from 'components/environment/EnvironmentTree.vue';
+import { defineComponent } from 'vue'
+import EnvironmentTree from 'components/environment/EnvironmentTree.vue'
 
 export default defineComponent({
   name: 'EnvironmentPage',
   components: { EnvironmentTree },
   setup() {
-    return {};
+    return {}
   }
-});
+})
 </script>

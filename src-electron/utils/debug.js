@@ -1,7 +1,9 @@
 if (process.env.NODE_ENV === 'production' || typeof process.env.DEBUG === 'undefined') {
-  global.DEBUG = false;
+  global.DEBUG = false
 } else {
-    global.DEBUG = process.env.DEBUG;
+    global.DEBUG = process.env.DEBUG
 }
 
-export default global.DEBUG;
+export const debugEnabled = () => {
+  return (global.DEBUG === 'PLASMIDO')
+}

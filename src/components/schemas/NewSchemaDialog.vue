@@ -47,11 +47,11 @@
 
 <script lang="ts">
 import {useDialogPluginComponent} from 'quasar'
-import {computed, defineComponent, PropType, ref} from 'vue';
-import JsonEditor from 'components/JsonEditor.vue';
-import SchemaTypeSelect from 'components/workbook/schema/SchemaTypeSelect.vue';
-import {ISchemaTypeSelector} from 'src/interfaces/selectors/ISchemaTypeSelector';
-import {SchemaType} from 'src/enums/SchemaType';
+import {computed, defineComponent, PropType, ref} from 'vue'
+import JsonEditor from 'components/JsonEditor.vue'
+import SchemaTypeSelect from 'components/workbook/schema/SchemaTypeSelect.vue'
+import {ISchemaTypeSelector} from 'src/interfaces/selectors/ISchemaTypeSelector'
+import {SchemaType} from 'src/enums/SchemaType'
 
 export default defineComponent({
   name: 'NewSchemaDialog',
@@ -67,26 +67,26 @@ export default defineComponent({
   setup(props) {
     const {dialogRef, onDialogHide, onDialogOK, onDialogCancel} = useDialogPluginComponent()
 
-    const localSubject = ref(props.subject);
-    const localSchema = ref(props.schema);
-    const localSchemaType = ref(props.schemaType);
+    const localSubject = ref(props.subject)
+    const localSchema = ref(props.schema)
+    const localSchemaType = ref(props.schemaType)
 
     const onOKClick = () => {
-      onDialogOK({subject: localSubject.value, schema: localSchema.value, schemaType: localSchemaType.value});
+      onDialogOK({subject: localSubject.value, schema: localSchema.value, schemaType: localSchemaType.value})
     }
 
     const onJsonChanged = (value: string) => {
-      localSchema.value = value;
+      localSchema.value = value
     }
 
     const onJsonInvalid = (errors: Array<unknown>) => {
-      console.log('invalid json', errors);
+      console.log('invalid json', errors)
     }
 
-    const isValidSchema = computed(() => localSubject.value && localSchema.value);
+    const isValidSchema = computed(() => localSubject.value && localSchema.value)
 
     const onSchemaTypeChanged = (value: ISchemaTypeSelector) => {
-      localSchemaType.value = SchemaType[value.value as keyof typeof SchemaType];
+      localSchemaType.value = SchemaType[value.value as keyof typeof SchemaType]
     }
 
     return {
@@ -103,7 +103,7 @@ export default defineComponent({
       onSchemaTypeChanged
     }
   }
-});
+})
 </script>
 
 <style scoped>

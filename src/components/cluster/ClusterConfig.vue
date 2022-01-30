@@ -63,39 +63,39 @@
   </q-form>
 </template>
 <script lang="ts">
-import {computed, defineComponent, onMounted, ref, watch} from 'vue';
-import {QDialogOptions, useQuasar} from 'quasar';
-import {BrokerProtocol} from 'app/src/enums/BrokerProtocol';
-import {IBroker} from 'src/interfaces/broker/IBroker';
-import useAdminRepository from 'src/composables/useAdminRepository';
-import useBrokersRepository from 'src/composables/useBrokersRepository';
-import {cloneDeep} from 'lodash';
-import ConfirmExitDialog from 'components/ConfirmExitDialog.vue';
-import {onBeforeRouteLeave, onBeforeRouteUpdate} from 'vue-router';
-import TitleEditor from 'components/workbook/title/TitleEditor.vue';
+import {computed, defineComponent, onMounted, ref, watch} from 'vue'
+import {QDialogOptions, useQuasar} from 'quasar'
+import {BrokerProtocol} from 'app/src/enums/BrokerProtocol'
+import {IBroker} from 'src/interfaces/broker/IBroker'
+import useAdminRepository from 'src/composables/useAdminRepository'
+import useBrokersRepository from 'src/composables/useBrokersRepository'
+import {cloneDeep} from 'lodash'
+import ConfirmExitDialog from 'components/ConfirmExitDialog.vue'
+import {onBeforeRouteLeave, onBeforeRouteUpdate} from 'vue-router'
+import TitleEditor from 'components/workbook/title/TitleEditor.vue'
 
 const savedNotifyOptions = (name: string) => ({
   color: 'green-4',
   textColor: 'white',
   icon: 'cloud_done',
   message: 'Broker `' + name + '` saved'
-});
+})
 
 const connectingErrorNotifyOptions = (broker: IBroker) => ({
   color: 'red-4',
   textColor: 'white',
   icon: 'cloud_done',
   message: `Could not connect to ${broker.name} (${broker.url})`
-});
+})
 
 const confirmDialogOptions = () => ({
   component: ConfirmExitDialog,
   componentProps: {}
-} as QDialogOptions);
+} as QDialogOptions)
 
-const CONNECTED_COLOR = 'green';
-const ERROR_COLOR = 'red-4';
-const NOT_CONNECTED_COLOR = 'black';
+const CONNECTED_COLOR = 'green'
+const ERROR_COLOR = 'red-4'
+const NOT_CONNECTED_COLOR = 'black'
 
 export default defineComponent({
   name: 'ClusterConfig',
@@ -103,9 +103,9 @@ export default defineComponent({
   emits: ['updatedBroker', 'persistedBroker'],
   components: {TitleEditor},
   setup(props, context) {
-    const $q = useQuasar();
+    const $q = useQuasar()
 
-    const {connecting, connected, connectingBrokerError, connectBroker} = useAdminRepository();
+    const {connecting, connected, connectingBrokerError, connectBroker} = useAdminRepository()
     const {
       currentBroker,
       inserted,
@@ -117,75 +117,75 @@ export default defineComponent({
       isSASL,
       isAws,
       hasChanges
-    } = useBrokersRepository();
+    } = useBrokersRepository()
 
-    const localBroker = ref(newBroker());
+    const localBroker = ref(newBroker())
 
     onMounted(() => {
-      initBroker(props.brokerId);
-    });
+      initBroker(props.brokerId)
+    })
 
     const asyncConfirmExistDialog = () => new Promise((resolve) => {
       $q.dialog(confirmDialogOptions())
         .onOk((dialogResult: { action: string }) => {
           if (dialogResult.action === 'ok') {
-            void saveBroker();
+            void saveBroker()
           }
-          resolve(true);
+          resolve(true)
         })
-        .onDismiss(() => resolve(false));
-    });
+        .onDismiss(() => resolve(false))
+    })
 
     const checkExit = async () => {
-      let result = true;
+      let result = true
       if (hasChanges.value) {
-        return !!(await asyncConfirmExistDialog());
+        return !!await asyncConfirmExistDialog()
       }
-      return result;
-    };
+      return result
+    }
 
     onBeforeRouteLeave(async () => {
-      return await checkExit();
-    });
+      return await checkExit()
+    })
 
     onBeforeRouteUpdate(async () => {
-      return await checkExit();
-    });
+      return await checkExit()
+    })
 
     watch(() => cloneDeep(currentBroker.value), () => {
-      Object.assign(localBroker.value, currentBroker.value);
-    });
+      Object.assign(localBroker.value, currentBroker.value)
+    })
 
     watch(() => cloneDeep(localBroker.value), () => {
-      assignNewBroker(localBroker.value);
-      context.emit('updatedBroker', currentBroker.value);
-    });
+      assignNewBroker(localBroker.value)
+      context.emit('updatedBroker', currentBroker.value)
+    })
 
     watch(inserted, () => {
       if (inserted) {
-        $q.notify(savedNotifyOptions(localBroker.value.name));
-        context.emit('persistedBroker', localBroker.value);
+        $q.notify(savedNotifyOptions(localBroker.value.name))
+        context.emit('persistedBroker', localBroker.value)
       }
-    });
+    })
 
     watch(updated, () => {
       if (updated) {
-        $q.notify(savedNotifyOptions(localBroker.value.name));
-        context.emit('persistedBroker', localBroker.value);
+        $q.notify(savedNotifyOptions(localBroker.value.name))
+        context.emit('persistedBroker', localBroker.value)
       }
-    });
+    })
 
     const connectedColor = computed(() => {
-      const errorConnecting = connectingBrokerError.value ? ERROR_COLOR : NOT_CONNECTED_COLOR;
-      return connected.value ? CONNECTED_COLOR : errorConnecting;
-    });
+      const errorConnecting = connectingBrokerError.value ? ERROR_COLOR : NOT_CONNECTED_COLOR
+      return connected.value ? CONNECTED_COLOR : errorConnecting
+    })
 
     watch(connectingBrokerError, () => {
-      $q.notify(connectingErrorNotifyOptions(localBroker.value));
-    });
+      $q.notify(connectingErrorNotifyOptions(localBroker.value))
+    })
 
     const onBrokerNameChanged = (value: string) => {
-      localBroker.value.name = value;
+      localBroker.value.name = value
     }
 
     return {
@@ -202,5 +202,5 @@ export default defineComponent({
       onBrokerNameChanged
     }
   }
-});
+})
 </script>

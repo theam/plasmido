@@ -1,8 +1,8 @@
-import {ArtifactType} from 'app/src-electron/enums/ArtifactType';
-import {IHeaders} from 'kafkajs';
-import {ConsumeFromType} from 'app/src-electron/enums/ConsumeFromType';
-import {ArtifactTextFormat} from 'app/src-electron/enums/ArtifactTextFormat';
-import {ArtifactSchemaType} from 'app/src-electron/enums/ArtifactSchemaType';
+import {ArtifactType} from 'app/src-electron/enums/ArtifactType'
+import {IHeaders} from 'kafkajs'
+import {ConsumeFromType} from 'app/src-electron/enums/ConsumeFromType'
+import {ArtifactTextFormat} from 'app/src-electron/enums/ArtifactTextFormat'
+import {ArtifactSchemaType} from 'app/src-electron/enums/ArtifactSchemaType'
 
 export interface IArtifactPayloadSchema {
   schemaRegistryId?: string,

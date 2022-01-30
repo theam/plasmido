@@ -22,8 +22,11 @@
   "productName": "Plasmido",
   "scripts": {
     "electron-dev": "quasar dev -m electron -p 55151",
-    "electron-dev-tools": "quasar dev -m electron --devtools -p 55151",
+    "electron-dev:debug": "DEBUG=PLASMIDO quasar dev -m electron -p 55151",
+    "electron-dev-tools": "DEBUG=PLASMIDO quasar dev -m electron --devtools -p 55151",
     "lint": "eslint --ext .js,.ts,.vue ./",
+    "lint:fix": "eslint --quiet --fix --ext .js,.ts,.vue ./",
+    "compile": "rm -rf ./dist && tsc",
     "test": "echo \"No test specified\" && exit 0",
     "build": "quasar build -m electron -p 55151",
     "build-all": "quasar build --target=all -m electron -p 55151"
@@ -63,6 +66,9 @@
     "@typescript-eslint/parser": "^4.9.0",
     "@vue/devtools": "^6.0.0-beta.6",
     "babel-eslint": "^10.0.1",
+    "prettier": "^2.5.1",
+    "eslint-plugin-import": "^2.25.4",
+    "eslint-plugin-prettier": "^4.0.0",
     "electron": "12.0.2",
     "electron-devtools-installer": "^3.2.0",
     "electron-packager": "^14.2.1",

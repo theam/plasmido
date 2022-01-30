@@ -1,4 +1,4 @@
-import {EachMessagePayload, IHeaders} from 'kafkajs';
+import {EachMessagePayload, IHeaders} from 'kafkajs'
 
 export interface IExtendedConsumedEvent {
   _id: string,

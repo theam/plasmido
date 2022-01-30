@@ -9,11 +9,11 @@
 </template>
 
 <script lang="ts">
-import {defineComponent, PropType, ref, watch} from 'vue';
+import {defineComponent, PropType, ref, watch} from 'vue'
 import {
   artifactTextFormatToArtifactTextFormatSelector,
-} from 'src/interfaces/selectors/IArtifactTextFormatSelector';
-import {ArtifactTextFormat, ArtifactTextFormatDescription} from 'src/enums/ArtifactTextFormat';
+} from 'src/interfaces/selectors/IArtifactTextFormatSelector'
+import {ArtifactTextFormat, ArtifactTextFormatDescription} from 'src/enums/ArtifactTextFormat'
 
 export default defineComponent({
   name: 'ArtifactTextFormatSelect',
@@ -29,16 +29,16 @@ export default defineComponent({
     const options = Object.values(ArtifactTextFormat).map(value => ({
       label: ArtifactTextFormatDescription[value as keyof typeof ArtifactTextFormatDescription],
       value: value
-    }));
-    const localTextFormat = ref(artifactTextFormatToArtifactTextFormatSelector(props.textFormatArtifact));
+    }))
+    const localTextFormat = ref(artifactTextFormatToArtifactTextFormatSelector(props.textFormatArtifact))
 
-    watch(() => localTextFormat.value, (newValue) => context.emit('textFormatChanged', newValue));
-    watch(() => props.textFormatArtifact, (newValue) => localTextFormat.value = artifactTextFormatToArtifactTextFormatSelector(newValue));
+    watch(() => localTextFormat.value, (newValue) => context.emit('textFormatChanged', newValue))
+    watch(() => props.textFormatArtifact, (newValue) => localTextFormat.value = artifactTextFormatToArtifactTextFormatSelector(newValue))
 
     return {
       localTextFormat,
       options
     }
   }
-});
+})
 </script>

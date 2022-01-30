@@ -1,4 +1,4 @@
-import {WorkBookActions} from 'app/src-electron/enums/WorkBookActions';
+import {WorkBookActions} from 'app/src-electron/enums/WorkBookActions'
 
 export interface IExecutionWorkbook {
   _id: string,

@@ -1,4 +1,4 @@
-import {SchemaRegistrySecurityProtocol} from 'src/enums/SchemaRegistrySecurityProtocol';
+import {SchemaRegistrySecurityProtocol} from 'src/enums/SchemaRegistrySecurityProtocol'
 
 export interface ISchemaRegistry {
   _id: string,

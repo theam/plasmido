@@ -59,15 +59,15 @@
 </template>
 
 <script lang="ts">
-import {computed, defineComponent, inject, onMounted, PropType, ref, watch} from 'vue';
-import {IConsumedEvent} from 'src/interfaces/IConsumedEvent';
-import useOutputMessages from 'src/components/workbook/consumer/useOutputMessages';
-import {WorkBookStatus} from 'src/enums/WorkBookStatus';
-import {IArtifactTextFormatSelector} from 'src/interfaces/selectors/IArtifactTextFormatSelector';
-import {ArtifactTextFormat} from 'src/enums/ArtifactTextFormat';
-import ArtifactTextFormatSelect from 'components/workbook/artifact/ArtifactTextFormatSelect.vue';
+import {computed, defineComponent, inject, onMounted, PropType, ref, watch} from 'vue'
+import {IConsumedEvent} from 'src/interfaces/IConsumedEvent'
+import useOutputMessages from 'src/components/workbook/consumer/useOutputMessages'
+import {WorkBookStatus} from 'src/enums/WorkBookStatus'
+import {IArtifactTextFormatSelector} from 'src/interfaces/selectors/IArtifactTextFormatSelector'
+import {ArtifactTextFormat} from 'src/enums/ArtifactTextFormat'
+import ArtifactTextFormatSelect from 'components/workbook/artifact/ArtifactTextFormatSelect.vue'
 import Timeout = NodeJS.Timeout;
-import {syntaxHighlight} from 'src/global';
+import {syntaxHighlight} from 'src/global'
 
 export default defineComponent({
   name: 'TextViewerOutputMessages',
@@ -82,74 +82,74 @@ export default defineComponent({
     textFormatChanged: null
   },
   setup(props, context) {
-    const intervalId = ref(null as Timeout | null);
-    const timeOutInterval = ref(3);
-    const lazyRows = ref([] as Array<IConsumedEvent>);
+    const intervalId = ref(null as Timeout | null)
+    const timeOutInterval = ref(3)
+    const lazyRows = ref([] as Array<IConsumedEvent>)
 
-    const {toObject, sleep} = useOutputMessages();
+    const {toObject, sleep} = useOutputMessages()
 
-    const getConsumedByArtifact = inject('getConsumedByArtifact') as (artifactUUID: string, filter: string, startRow: number, count: number) => Promise<Array<IConsumedEvent>>;
-    const getConsumedCountByArtifact = inject('getConsumedCountByArtifact') as (artifactUUID: string, filter: string) => Promise<number>;
+    const getConsumedByArtifact = inject('getConsumedByArtifact') as (artifactUUID: string, filter: string, startRow: number, count: number) => Promise<Array<IConsumedEvent>>
+    const getConsumedCountByArtifact = inject('getConsumedCountByArtifact') as (artifactUUID: string, filter: string) => Promise<number>
 
     const refresh = async () => {
-      const rowsNumber = await getConsumedCountByArtifact(props.currentArtifactId || '', '');
-      const returnedData = await getConsumedByArtifact(props.currentArtifactId || '', '', 0, rowsNumber);
-      lazyRows.value.splice(0, lazyRows.value.length, ...returnedData);
+      const rowsNumber = await getConsumedCountByArtifact(props.currentArtifactId || '', '')
+      const returnedData = await getConsumedByArtifact(props.currentArtifactId || '', '', 0, rowsNumber)
+      lazyRows.value.splice(0, lazyRows.value.length, ...returnedData)
     }
 
     const stopInterval = () => {
       if (intervalId.value !== null) {
-        clearInterval(intervalId.value);
+        clearInterval(intervalId.value)
       }
-    };
+    }
 
     const onRequest = async () => {
-      stopInterval();
-      await refresh();
+      stopInterval()
+      await refresh()
       if (timeOutInterval.value && timeOutInterval.value > 0) {
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
-        intervalId.value = setInterval(async () => refresh(), timeOutInterval.value * 1000);
+        intervalId.value = setInterval(async () => refresh(), timeOutInterval.value * 1000)
       }
     }
 
     const onManualRequest = async () => {
       if (props.status === WorkBookStatus.RUNNING) {
-        await onRequest();
+        await onRequest()
       }
     }
 
     watch(() => timeOutInterval.value, async () => {
       if (props.status === WorkBookStatus.RUNNING) {
-        await onRequest();
+        await onRequest()
       }
-    });
+    })
 
     watch(() => props.status, async () => {
       if (props.status !== WorkBookStatus.RUNNING) {
-        stopInterval();
+        stopInterval()
       } else {
-        lazyRows.value = [];
-        await sleep(1000);
-        await onRequest();
+        lazyRows.value = []
+        await sleep(1000)
+        await onRequest()
       }
-    });
+    })
 
-    const formattedEvents = computed(() => lazyRows.value?.map(message => toObject(message)));
+    const formattedEvents = computed(() => lazyRows.value?.map(message => toObject(message)))
 
     onMounted(async () => {
       if (props.status === WorkBookStatus.RUNNING) {
-        await onRequest();
+        await onRequest()
       }
-    });
+    })
 
     const onTextFormatChanged = (value: IArtifactTextFormatSelector) => {
-      context.emit('textFormatChanged', value);
+      context.emit('textFormatChanged', value)
     }
 
-    const viewAsJson = computed(() => props.textFormat === ArtifactTextFormat.JSON);
+    const viewAsJson = computed(() => props.textFormat === ArtifactTextFormat.JSON)
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    const highlight = (val: string) => syntaxHighlight(val);
+    const highlight = (val: string) => syntaxHighlight(val)
 
     return {
       formattedEvents,
@@ -161,7 +161,7 @@ export default defineComponent({
       highlight
     }
   }
-});
+})
 </script>
 
 <style scoped lang="sass">

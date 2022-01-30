@@ -9,9 +9,9 @@
 </template>
 
 <script lang="ts">
-import {defineComponent, PropType, ref, watch} from 'vue';
-import {artifactSchemaTypeToArtifactSchemaTypeSelector} from 'src/interfaces/selectors/IArtifactSchemaTypeSelector';
-import {ArtifactSchemaType, ArtifactSchemaTypeDescription} from 'src/enums/ArtifactSchemaType';
+import {defineComponent, PropType, ref, watch} from 'vue'
+import {artifactSchemaTypeToArtifactSchemaTypeSelector} from 'src/interfaces/selectors/IArtifactSchemaTypeSelector'
+import {ArtifactSchemaType, ArtifactSchemaTypeDescription} from 'src/enums/ArtifactSchemaType'
 
 export default defineComponent({
   name: 'ArtifactSchemaTypeSelect',
@@ -28,16 +28,16 @@ export default defineComponent({
       .map(value => ({
       label: ArtifactSchemaTypeDescription[value as keyof typeof ArtifactSchemaTypeDescription],
       value: value
-    }));
-    const localFormatArtifact = ref(artifactSchemaTypeToArtifactSchemaTypeSelector(props.formatArtifact));
+    }))
+    const localFormatArtifact = ref(artifactSchemaTypeToArtifactSchemaTypeSelector(props.formatArtifact))
 
-    watch(() => localFormatArtifact.value, (newValue) => context.emit('schemaTypeChanged', newValue));
-    watch(() => props.formatArtifact, (newValue) => localFormatArtifact.value = artifactSchemaTypeToArtifactSchemaTypeSelector(newValue));
+    watch(() => localFormatArtifact.value, (newValue) => context.emit('schemaTypeChanged', newValue))
+    watch(() => props.formatArtifact, (newValue) => localFormatArtifact.value = artifactSchemaTypeToArtifactSchemaTypeSelector(newValue))
 
     return {
       localFormatArtifact,
       options
     }
   }
-});
+})
 </script>

@@ -75,17 +75,17 @@
 </template>
 
 <script lang="ts">
-import {defineComponent, onMounted, ref, watch} from 'vue';
-import {onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter} from 'vue-router';
-import {IEnvironment} from 'src/interfaces/environment/IEnvironment';
-import useEnvironmentsRepository from 'src/composables/useEnvironmentsRepository';
-import {cloneDeep} from 'lodash';
-import {QDialogOptions, useQuasar} from 'quasar';
-import {IEnvironmentVariable} from 'src/interfaces/environment/IEnvironmentVariable';
-import {v4} from 'uuid';
-import EnvironmentVariableDialog from 'components/environment/EnvironmentVariableDialog.vue';
-import TitleEditor from 'components/workbook/title/TitleEditor.vue';
-import ConfirmExitDialog from 'components/ConfirmExitDialog.vue';
+import {defineComponent, onMounted, ref, watch} from 'vue'
+import {onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter} from 'vue-router'
+import {IEnvironment} from 'src/interfaces/environment/IEnvironment'
+import useEnvironmentsRepository from 'src/composables/useEnvironmentsRepository'
+import {cloneDeep} from 'lodash'
+import {QDialogOptions, useQuasar} from 'quasar'
+import {IEnvironmentVariable} from 'src/interfaces/environment/IEnvironmentVariable'
+import {v4} from 'uuid'
+import EnvironmentVariableDialog from 'components/environment/EnvironmentVariableDialog.vue'
+import TitleEditor from 'components/workbook/title/TitleEditor.vue'
+import ConfirmExitDialog from 'components/ConfirmExitDialog.vue'
 
 const columns = [
   {
@@ -121,34 +121,34 @@ const columns = [
     label: '',
     field: 'actions'
   }
-];
+]
 
 const savedNotifyOptions = (name: string) => ({
   color: 'green-4',
   textColor: 'white',
   icon: 'cloud_done',
   message: 'Environment `' + name + '` saved'
-});
+})
 
 const addEnvironmentVariableDialogOptions = (options?: {name?: string, value?: string, environmentVariables?: Array<IEnvironmentVariable>, inserting?: boolean
 }) => ({
   component: EnvironmentVariableDialog,
   componentProps: {name: options?.name, value: options?.value, environmentVariables: options?.environmentVariables, inserting: options?.inserting}
-} as QDialogOptions);
+} as QDialogOptions)
 
 
 const confirmDialogOptions = () => ({
   component: ConfirmExitDialog,
   componentProps: {}
-} as QDialogOptions);
+} as QDialogOptions)
 
 export default defineComponent({
   name: 'EnvironmentForm',
   components: {TitleEditor},
   setup() {
-    const router = useRouter();
-    const route = useRoute();
-    const $q = useQuasar();
+    const router = useRouter()
+    const route = useRoute()
+    const $q = useQuasar()
     const {
       currentEnvironment,
       inserted,
@@ -158,111 +158,111 @@ export default defineComponent({
       assignNewEnvironment,
       saveEnvironment,
       hasChanges
-    } = useEnvironmentsRepository();
+    } = useEnvironmentsRepository()
 
-    const environmentId = route.params.id as string;
-    const localEnvironment = ref(newEnvironment());
-    const loading = ref(false);
-    const filter = ref('');
+    const environmentId = route.params.id as string
+    const localEnvironment = ref(newEnvironment())
+    const loading = ref(false)
+    const filter = ref('')
 
     onMounted(() => {
-      initEnvironment(environmentId);
-    });
+      initEnvironment(environmentId)
+    })
 
     const asyncConfirmExistDialog = () => new Promise((resolve) => {
       $q.dialog(confirmDialogOptions())
         .onOk((dialogResult: { action: string }) => {
           if (dialogResult.action === 'ok') {
-            void saveEnvironment();
+            void saveEnvironment()
           }
-          resolve(true);
+          resolve(true)
         })
-        .onDismiss(() => resolve(false));
-    });
+        .onDismiss(() => resolve(false))
+    })
 
     async function checkExit() {
-      let result = true;
+      let result = true
       if (hasChanges.value) {
-        return !!(await asyncConfirmExistDialog());
+        return !!await asyncConfirmExistDialog()
       }
-      return result;
+      return result
     }
 
     onBeforeRouteLeave(async () => {
-      return await checkExit();
-    });
+      return await checkExit()
+    })
 
     onBeforeRouteUpdate(async () => {
-      return await checkExit();
-    });
+      return await checkExit()
+    })
 
     const addRow = () => {
-      loading.value = true;
+      loading.value = true
       $q.dialog(addEnvironmentVariableDialogOptions({environmentVariables: localEnvironment.value.variables}))
         .onOk((result: { name: string, value: string }) => {
           return localEnvironment.value.variables.push({
             uuid: v4(),
             name: result.name,
             value: result.value
-          });
+          })
         })
-        .onDismiss(() => loading.value = false);
-    };
+        .onDismiss(() => loading.value = false)
+    }
 
     const editRow = (row: IEnvironmentVariable) => {
-      loading.value = true;
+      loading.value = true
       $q.dialog(addEnvironmentVariableDialogOptions({name: row.name, value: row.value, environmentVariables: localEnvironment.value.variables, inserting: false}))
         .onOk((result: { name: string, value: string }) => {
-          const find = localEnvironment.value.variables.find(value => value.uuid === row.uuid);
+          const find = localEnvironment.value.variables.find(value => value.uuid === row.uuid)
           if (find) {
-            find.name = result.name;
-            find.value = result.value;
+            find.name = result.name
+            find.value = result.value
           }
         })
-        .onDismiss(() => loading.value = false);
-    };
+        .onDismiss(() => loading.value = false)
+    }
 
     const deleteRow = (row: IEnvironmentVariable) => {
-      const index = localEnvironment.value.variables.findIndex(value => value.uuid === row.uuid);
-      confirm('Are you sure you want to delete this item?') && localEnvironment.value.variables.splice(index, 1);
-    };
+      const index = localEnvironment.value.variables.findIndex(value => value.uuid === row.uuid)
+      confirm('Are you sure you want to delete this item?') && localEnvironment.value.variables.splice(index, 1)
+    }
 
     const onUpdatedEnvironment = (env: IEnvironment) => {
-      assignNewEnvironment(env);
+      assignNewEnvironment(env)
     }
 
     watch(() => localEnvironment.value._id, () => {
-      void router.push({name: 'environment_path', params: {id: localEnvironment.value._id}});
-    });
+      void router.push({name: 'environment_path', params: {id: localEnvironment.value._id}})
+    })
 
     watch(() => cloneDeep(currentEnvironment.value), () => {
-      Object.assign(localEnvironment.value, currentEnvironment.value);
-    });
+      Object.assign(localEnvironment.value, currentEnvironment.value)
+    })
 
     watch(() => cloneDeep(localEnvironment.value), () => {
-      onUpdatedEnvironment(localEnvironment.value);
-    });
+      onUpdatedEnvironment(localEnvironment.value)
+    })
 
     watch(inserted, () => {
       if (inserted) {
-        $q.notify(savedNotifyOptions(localEnvironment.value.name));
-        onUpdatedEnvironment(localEnvironment.value);
+        $q.notify(savedNotifyOptions(localEnvironment.value.name))
+        onUpdatedEnvironment(localEnvironment.value)
       }
-    });
+    })
 
     watch(updated, () => {
       if (updated) {
-        $q.notify(savedNotifyOptions(localEnvironment.value.name));
-        onUpdatedEnvironment(localEnvironment.value);
+        $q.notify(savedNotifyOptions(localEnvironment.value.name))
+        onUpdatedEnvironment(localEnvironment.value)
       }
-    });
+    })
 
     const onReset = () => {
-      initEnvironment(environmentId);
-    };
+      initEnvironment(environmentId)
+    }
 
     const onEnvironmentNameChanged = (value: string) => {
-      localEnvironment.value.name = value;
+      localEnvironment.value.name = value
     }
 
     return {
@@ -281,6 +281,6 @@ export default defineComponent({
       hasChanges
     }
   }
-});
+})
 </script>
 

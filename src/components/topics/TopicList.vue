@@ -136,25 +136,25 @@
 </template>
 
 <script lang="ts">
-import {defineComponent, onMounted, PropType, ref, watch} from 'vue';
-import {useQuasar} from 'quasar';
-import useAdminRepository from 'src/composables/useAdminRepository';
-import {IBroker} from 'src/interfaces/broker/IBroker';
-import {IDataTopic} from 'app/src-electron/interfaces/topic/IDataTopic';
+import {defineComponent, onMounted, PropType, ref, watch} from 'vue'
+import {useQuasar} from 'quasar'
+import useAdminRepository from 'src/composables/useAdminRepository'
+import {IBroker} from 'src/interfaces/broker/IBroker'
+import {IDataTopic} from 'app/src-electron/interfaces/topic/IDataTopic'
 
 const topicCreatedNotifyOptions = () => ({
   color: 'green-4',
   textColor: 'white',
   icon: 'cloud_done',
   message: 'Topic created'
-});
+})
 
 const duplicateTopicNotifyOptions = () => ({
   color: 'red-4',
   textColor: 'white',
   icon: 'error',
   message: 'Duplicated topic'
-});
+})
 
 const addTopicDialogOptions = () => ({
   title: 'Add topic',
@@ -166,7 +166,7 @@ const addTopicDialogOptions = () => ({
   },
   cancel: true,
   persistent: true
-});
+})
 
 export default defineComponent({
   name: 'TopicList',
@@ -175,18 +175,18 @@ export default defineComponent({
     showDetails: {type: Boolean, default: true}
   },
   setup(props) {
-    const $q = useQuasar();
+    const $q = useQuasar()
     const columns = [
       {
         name: 'topicName', required: true, label: 'Topic', align: 'left', sortable: true,
         field(row: IDataTopic) {
-          return row.name;
+          return row.name
         },
         format(val: string) {
-          return `${val}`;
+          return `${val}`
         }
       }
-    ];
+    ]
 
     const {
       topics,
@@ -197,31 +197,31 @@ export default defineComponent({
       saveTopic,
       deleteTopic,
       resetConnection
-    } = useAdminRepository();
+    } = useAdminRepository()
 
     const loadTopics = async () => {
-      await findAllTopics(props.broker);
-      await findAllMetadata(props.broker);
+      await findAllTopics(props.broker)
+      await findAllMetadata(props.broker)
     }
 
     onMounted(() => {
-      void loadTopics();
-    });
+      void loadTopics()
+    })
 
-    watch(() => props.broker, () => void loadTopics(), {deep: true});
+    watch(() => props.broker, () => void loadTopics(), {deep: true})
 
     watch(topicInserted, () => {
-      if (topicInserted.value) $q.notify(topicCreatedNotifyOptions());
-    });
+      if (topicInserted.value) $q.notify(topicCreatedNotifyOptions())
+    })
 
     watch(duplicatedTopicName, () => {
-      if (duplicatedTopicName.value) $q.notify(duplicateTopicNotifyOptions());
-    });
+      if (duplicatedTopicName.value) $q.notify(duplicateTopicNotifyOptions())
+    })
 
     const openAddTopic = () => {
       $q.dialog(addTopicDialogOptions())
-        .onOk((topicName: string) => void saveTopic(props.broker, topicName));
-    };
+        .onOk((topicName: string) => void saveTopic(props.broker, topicName))
+    }
 
     const deleteTopics = (value: string) => {
       $q.dialog({
@@ -231,12 +231,12 @@ export default defineComponent({
         cancel: true,
         persistent: true
       })
-        .onOk(() => void deleteTopic(props.broker, [value]));
-    };
+        .onOk(() => void deleteTopic(props.broker, [value]))
+    }
 
     const refreshTopics = async () => {
-      resetConnection();
-      await loadTopics();
+      resetConnection()
+      await loadTopics()
     }
 
     return {
@@ -249,7 +249,7 @@ export default defineComponent({
       refreshTopics
     }
   }
-});
+})
 </script>
 
 <style scoped lang="sass">

@@ -29,7 +29,7 @@
 
 <script lang="ts">
 import {useDialogPluginComponent} from 'quasar'
-import {defineComponent} from 'vue';
+import {defineComponent} from 'vue'
 
 export default defineComponent({
   name: 'ConfirmExitDialog',
@@ -44,14 +44,14 @@ export default defineComponent({
     }
   },
   setup() {
-    const {dialogRef, onDialogHide, onDialogOK, onDialogCancel} = useDialogPluginComponent();
+    const {dialogRef, onDialogHide, onDialogOK, onDialogCancel} = useDialogPluginComponent()
 
     const onSave = () => {
-      onDialogOK({action: 'ok'});
+      onDialogOK({action: 'ok'})
     }
 
     const onDontSave = () => {
-      onDialogOK({action: 'dont'});
+      onDialogOK({action: 'dont'})
     }
 
     return {
@@ -63,7 +63,7 @@ export default defineComponent({
     }
 
   }
-});
+})
 </script>
 
 

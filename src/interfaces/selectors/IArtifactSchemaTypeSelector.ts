@@ -1,4 +1,4 @@
-import {ArtifactSchemaType, ArtifactSchemaTypeDescription} from 'src/enums/ArtifactSchemaType';
+import {ArtifactSchemaType, ArtifactSchemaTypeDescription} from 'src/enums/ArtifactSchemaType'
 
 export interface IArtifactSchemaTypeSelector {
   label: string,

@@ -80,11 +80,34 @@ module.exports = {
     'prefer-promise-reject-errors': 'off',
 
     // TypeScript
-    quotes: ['warn', 'single', { avoidEscape: true }],
-    '@typescript-eslint/explicit-function-return-type': 'off',
+    // quotes: ['warn', 'single', { avoidEscape: true }],
+    // '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
 
     // allow debugger during development only
-    'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off'
+    'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
+
+    'linebreak-style': ['error', 'unix'],
+    quotes: ['error', 'single', { avoidEscape: true, allowTemplateLiterals: false }],
+    semi: ['error', 'never'],
+    'no-extra-parens': 'off',
+    '@typescript-eslint/no-extra-parens': ['error'],
+    'no-magic-numbers': 'off',
+    '@typescript-eslint/no-parameter-properties': 0,
+    '@typescript-eslint/no-floating-promises': ['error'],
+    '@typescript-eslint/array-type': [0, 'generic'],
+    '@typescript-eslint/no-use-before-define': 0,
+    '@typescript-eslint/no-var-requires': 0,
+    '@typescript-eslint/ban-ts-ignore': 0,
+    '@typescript-eslint/no-empty-function': 0,
+    // '@typescript-eslint/explicit-function-return-type': [
+    //   'warn',
+    //   {
+    //     allowExpressions: true,
+    //     allowTypedFunctionExpressions: true,
+    //     allowHigherOrderFunctions: true,
+    //   },
+    // ],
+    // 'import/no-extraneous-dependencies': ['error'],
   }
 }

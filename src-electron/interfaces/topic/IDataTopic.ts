@@ -1,4 +1,4 @@
-import {PartitionMetadata} from 'kafkajs';
+import {PartitionMetadata} from 'kafkajs'
 
 export interface IDataTopic {
   name: string

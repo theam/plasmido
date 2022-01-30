@@ -1,4 +1,4 @@
-import {Message} from 'kafkajs';
+import {Message} from 'kafkajs'
 
 export interface IProducedEvent {
   message: Message[],

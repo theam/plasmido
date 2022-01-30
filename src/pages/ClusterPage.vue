@@ -5,14 +5,14 @@
 </template>
 
 <script lang="ts">
-import ClusterTree from 'components/cluster/ClusterTree.vue';
-import { defineComponent } from 'vue';
+import ClusterTree from 'components/cluster/ClusterTree.vue'
+import { defineComponent } from 'vue'
 
 export default defineComponent({
   name: 'ClusterPage',
   components: { ClusterTree },
   setup() {
-    return {};
+    return {}
   }
-});
+})
 </script>

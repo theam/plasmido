@@ -32,14 +32,14 @@
 
 <script lang="ts">
 import {useDialogPluginComponent} from 'quasar'
-import {computed, defineComponent, PropType, ref} from 'vue';
-import {IHeaders} from 'kafkajs';
+import {computed, defineComponent, PropType, ref} from 'vue'
+import {IHeaders} from 'kafkajs'
 
 export default defineComponent({
   name: 'NewHeaderDialog',
   props: {
-    headerKey: {type: [String, Number], default: () => ('')},
-    value: {type: String, default: () => ('')},
+    headerKey: {type: [String, Number], default: () => ''},
+    value: {type: String, default: () => ''},
     headers: {type: Object as PropType<IHeaders>, default: () => ({}), required: true},
     inserting: {type: Boolean, default: true}
   },
@@ -47,34 +47,34 @@ export default defineComponent({
     ...useDialogPluginComponent.emits
   ],
   setup(props) {
-    const {dialogRef, onDialogHide, onDialogOK, onDialogCancel} = useDialogPluginComponent();
-    const duplicateMessage = ref('');
+    const {dialogRef, onDialogHide, onDialogOK, onDialogCancel} = useDialogPluginComponent()
+    const duplicateMessage = ref('')
 
-    const localKey = ref(props.headerKey);
-    const localValue = ref(props.value);
+    const localKey = ref(props.headerKey)
+    const localValue = ref(props.value)
 
     const isDuplicateHeader = () => {
-      const duplicateHeader = props.inserting && props.headers[localKey.value];
-      duplicateMessage.value = duplicateHeader ? 'Duplicate header' : '';
-      return duplicateHeader;
-    };
+      const duplicateHeader = props.inserting && props.headers[localKey.value]
+      duplicateMessage.value = duplicateHeader ? 'Duplicate header' : ''
+      return duplicateHeader
+    }
 
     const okButtonDisable = computed(() => {
-      let localKeyResult;
-      let localValueResult;
+      let localKeyResult
+      let localValueResult
       if (typeof localKey.value === 'string') {
-        localKeyResult = (!localKey.value || /\s/.test(localKey.value));
+        localKeyResult = !localKey.value || /\s/.test(localKey.value)
       }
       if (typeof localValue.value === 'string') {
-        localValueResult = (!localValue.value || /\s/.test(localValue.value));
+        localValueResult = !localValue.value || /\s/.test(localValue.value)
       }
-      const formatInvalid = ((localKeyResult !== undefined && localKeyResult) || (localValueResult !== undefined && localValueResult));
-      const duplicateHeader = isDuplicateHeader();
-      return formatInvalid || duplicateHeader;
-    });
+      const formatInvalid = localKeyResult !== undefined && localKeyResult || localValueResult !== undefined && localValueResult
+      const duplicateHeader = isDuplicateHeader()
+      return formatInvalid || duplicateHeader
+    })
 
     const onOKClick = () => {
-      onDialogOK({key: localKey.value, value: localValue.value});
+      onDialogOK({key: localKey.value, value: localValue.value})
     }
 
     return {
@@ -88,7 +88,7 @@ export default defineComponent({
       okButtonDisable
     }
   }
-});
+})
 </script>
 
 <style scoped>

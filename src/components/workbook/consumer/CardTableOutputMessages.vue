@@ -121,17 +121,17 @@
 </template>
 
 <script lang="ts">
-import {computed, defineComponent, inject, onMounted, onUnmounted, PropType, ref, watch} from 'vue';
-import {IOutputMessageRow} from 'src/interfaces/IOutputMessageRow';
-import {syntaxHighlight} from 'src/global';
-import {WorkBookStatus} from 'src/enums/WorkBookStatus';
-import {IConsumedEvent} from 'src/interfaces/IConsumedEvent';
-import useOutputMessages from 'src/components/workbook/consumer/useOutputMessages';
+import {computed, defineComponent, inject, onMounted, onUnmounted, PropType, ref, watch} from 'vue'
+import {IOutputMessageRow} from 'src/interfaces/IOutputMessageRow'
+import {syntaxHighlight} from 'src/global'
+import {WorkBookStatus} from 'src/enums/WorkBookStatus'
+import {IConsumedEvent} from 'src/interfaces/IConsumedEvent'
+import useOutputMessages from 'src/components/workbook/consumer/useOutputMessages'
 import Timeout = NodeJS.Timeout;
-import {IRequestOptions} from 'src/interfaces/workbooks/IRequestOptions';
-import {IArtifactTextFormatSelector} from 'src/interfaces/selectors/IArtifactTextFormatSelector';
-import {ArtifactTextFormat} from 'src/enums/ArtifactTextFormat';
-import ArtifactTextFormatSelect from 'components/workbook/artifact/ArtifactTextFormatSelect.vue';
+import {IRequestOptions} from 'src/interfaces/workbooks/IRequestOptions'
+import {IArtifactTextFormatSelector} from 'src/interfaces/selectors/IArtifactTextFormatSelector'
+import {ArtifactTextFormat} from 'src/enums/ArtifactTextFormat'
+import ArtifactTextFormatSelect from 'components/workbook/artifact/ArtifactTextFormatSelect.vue'
 
 export default defineComponent({
   name: 'CardTableOutputMessages',
@@ -150,18 +150,18 @@ export default defineComponent({
       {
         name: 'message', required: true, label: 'Message', align: 'left', sortable: true,
         field(row: IOutputMessageRow) {
-          return row.value;
+          return row.value
         },
         format(val: string) {
-          return `${val}`;
+          return `${val}`
         }
       }
-    ];
+    ]
 
-    const intervalId = ref(null as Timeout | null);
-    const timeOutInterval = ref(3);
-    const filter = ref('');
-    const lazyRows = ref([] as Array<IConsumedEvent>);
+    const intervalId = ref(null as Timeout | null)
+    const timeOutInterval = ref(3)
+    const filter = ref('')
+    const lazyRows = ref([] as Array<IConsumedEvent>)
     const loading = ref(false)
     const pagination = ref({
       sortBy: 'desc',
@@ -169,44 +169,44 @@ export default defineComponent({
       page: 1,
       rowsPerPage: 3,
       rowsNumber: 10
-    });
+    })
 
-    const getConsumedByArtifact = inject('getConsumedByArtifact') as (artifactUUID: string, filter: string, startRow: number, count: number) => Promise<Array<IConsumedEvent>>;
-    const getConsumedCountByArtifact = inject('getConsumedCountByArtifact') as (artifactUUID: string, filter: string) => Promise<number>;
+    const getConsumedByArtifact = inject('getConsumedByArtifact') as (artifactUUID: string, filter: string, startRow: number, count: number) => Promise<Array<IConsumedEvent>>
+    const getConsumedCountByArtifact = inject('getConsumedCountByArtifact') as (artifactUUID: string, filter: string) => Promise<number>
 
     const refresh = async (options: IRequestOptions) => {
-      loading.value = true;
+      loading.value = true
       try {
-        const {page, rowsPerPage, sortBy, descending} = options.pagination;
-        pagination.value.rowsNumber = await getConsumedCountByArtifact(props.currentArtifactId || '', options.filter);
-        const fetchCount = rowsPerPage === 0 ? pagination.value.rowsNumber : rowsPerPage;
-        const startRow = (page - 1) * rowsPerPage;
-        const returnedData = await getConsumedByArtifact(props.currentArtifactId || '', options.filter, startRow, fetchCount);
-        lazyRows.value.splice(0, lazyRows.value.length, ...returnedData);
-        pagination.value.page = page;
-        pagination.value.rowsPerPage = rowsPerPage;
-        pagination.value.sortBy = sortBy;
-        pagination.value.descending = descending;
+        const {page, rowsPerPage, sortBy, descending} = options.pagination
+        pagination.value.rowsNumber = await getConsumedCountByArtifact(props.currentArtifactId || '', options.filter)
+        const fetchCount = rowsPerPage === 0 ? pagination.value.rowsNumber : rowsPerPage
+        const startRow = (page - 1) * rowsPerPage
+        const returnedData = await getConsumedByArtifact(props.currentArtifactId || '', options.filter, startRow, fetchCount)
+        lazyRows.value.splice(0, lazyRows.value.length, ...returnedData)
+        pagination.value.page = page
+        pagination.value.rowsPerPage = rowsPerPage
+        pagination.value.sortBy = sortBy
+        pagination.value.descending = descending
       } finally {
-        loading.value = false;
+        loading.value = false
       }
     }
 
     const stopInterval = () => {
       if (intervalId.value !== null) {
-        clearInterval(intervalId.value);
+        clearInterval(intervalId.value)
       }
-    };
+    }
 
     const onRequest = async (options: IRequestOptions) => {
-      stopInterval();
+      stopInterval()
       await refresh({
         pagination: options.pagination,
         filter: options.filter
-      } as IRequestOptions);
+      } as IRequestOptions)
       if (timeOutInterval.value && timeOutInterval.value > 0) {
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
-        intervalId.value = setInterval(async () => refresh(options), timeOutInterval.value * 1000);
+        intervalId.value = setInterval(async () => refresh(options), timeOutInterval.value * 1000)
       }
     }
 
@@ -215,37 +215,37 @@ export default defineComponent({
         await onRequest({
           pagination: pagination.value,
           filter: filter.value
-        } as IRequestOptions);
+        } as IRequestOptions)
       }
-    };
+    }
 
     const onManualRequest = async () => {
-      await update();
+      await update()
     }
 
     watch(() => timeOutInterval.value, async () => {
-      await update();
-    });
+      await update()
+    })
 
     watch(() => props.status, async () => {
       if (props.status !== WorkBookStatus.RUNNING) {
-        stopInterval();
+        stopInterval()
       } else {
-        lazyRows.value = [];
-        await sleep(1000);
+        lazyRows.value = []
+        await sleep(1000)
         await onRequest({
           pagination: pagination.value,
           filter: filter.value
-        } as IRequestOptions);
+        } as IRequestOptions)
       }
-    });
+    })
 
-    const {toObject, sleep} = useOutputMessages();
+    const {toObject, sleep} = useOutputMessages()
 
-    const formattedEvents = computed(() => lazyRows.value?.map(message => toObject(message)));
+    const formattedEvents = computed(() => lazyRows.value?.map(message => toObject(message)))
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    const highlight = (val: string) => syntaxHighlight(val);
+    const highlight = (val: string) => syntaxHighlight(val)
 
     onMounted(() => {
       void (async () => {
@@ -253,20 +253,20 @@ export default defineComponent({
           await onRequest({
             pagination: pagination.value,
             filter: filter.value
-          } as IRequestOptions);
+          } as IRequestOptions)
         }
-      })();
-    });
+      })()
+    })
 
     onUnmounted(() => {
-      stopInterval();
-    });
+      stopInterval()
+    })
 
     const onTextFormatChanged = (value: IArtifactTextFormatSelector) => {
-      context.emit('textFormatChanged', value);
+      context.emit('textFormatChanged', value)
     }
 
-    const viewAsJson = computed(() => props.textFormat === ArtifactTextFormat.JSON);
+    const viewAsJson = computed(() => props.textFormat === ArtifactTextFormat.JSON)
 
     return {
       columns,
@@ -280,9 +280,9 @@ export default defineComponent({
       timeOutInterval,
       onTextFormatChanged,
       viewAsJson
-    };
+    }
   }
-});
+})
 
 </script>
 

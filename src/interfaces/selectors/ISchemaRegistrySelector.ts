@@ -1,4 +1,4 @@
-import {ISchemaRegistry} from 'src/interfaces/schemaRegistry/ISchemaRegistry';
+import {ISchemaRegistry} from 'src/interfaces/schemaRegistry/ISchemaRegistry'
 
 export interface ISchemaRegistrySelector {
   label: string,
@@ -7,7 +7,7 @@ export interface ISchemaRegistrySelector {
 }
 
 export const schemaRegistryToSchemaRegistrySelector = (schemaRegistry: ISchemaRegistry | null) => {
-  if (schemaRegistry === null || schemaRegistry._id === '') return null;
+  if (schemaRegistry === null || schemaRegistry._id === '') return null
   return {
     label: schemaRegistry?.name,
     value: schemaRegistry?._id,

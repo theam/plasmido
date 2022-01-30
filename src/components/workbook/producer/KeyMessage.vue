@@ -15,12 +15,12 @@
   </div>
 </template>
 <script lang="ts">
-import {ref} from 'vue';
+import {ref} from 'vue'
 
 export default {
   name: 'KeyMessage',
   setup() {
-    const typeGroup = ref('json');
+    const typeGroup = ref('json')
 
     return {
       typeGroup

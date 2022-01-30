@@ -1,4 +1,4 @@
-import {SchemaType, SchemaTypeDescription} from 'src/enums/SchemaType';
+import {SchemaType, SchemaTypeDescription} from 'src/enums/SchemaType'
 
 export interface ISchemaTypeSelector {
   label: string,
