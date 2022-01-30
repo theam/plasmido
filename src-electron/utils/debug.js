@@ -5,5 +5,5 @@ if (process.env.NODE_ENV === 'production' || typeof process.env.DEBUG === 'undef
 }
 
 export const debugEnabled = () => {
-  return (global.DEBUG === 'PLASMIDO')
+  return global.DEBUG === 'PLASMIDO'
 }
