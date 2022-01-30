@@ -4,5 +4,8 @@
     "src/**/*",
     "src-electron/**/*",
     "test/**/*"
+  ],
+  "exclude": [
+    "node_modules"
   ]
 }

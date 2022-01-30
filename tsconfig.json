@@ -3,6 +3,7 @@
   "sourceMap": true,
   "devtool": "eval-source-map",
   "compilerOptions": {
-    "baseUrl": "."
+    "baseUrl": ".",
+    "skipLibCheck": true
   }
 }
