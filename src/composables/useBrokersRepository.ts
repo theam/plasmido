@@ -24,7 +24,7 @@ export default function useBrokersRepository() {
       protocol: BrokerProtocol.NONE,
       ssl_enabled: false,
       rejectUnauthorized: false,
-      name: '',
+      name: 'New Broker',
       url: '',
       username: '',
       password: '',

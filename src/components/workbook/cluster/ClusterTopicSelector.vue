@@ -13,7 +13,7 @@
         behavior="menu"
       >
         <template v-slot:selected-item="scope">
-          <div class="ellipsis">{{ scope.opt.label }}</div>
+          <div class="ellipsis">{{ scope.opt.label === '' ? '(' + scope.opt.broker.url + ')'  : scope.opt.label }}</div>
           <q-tooltip>{{ scope.opt.label }}</q-tooltip>
         </template>
 

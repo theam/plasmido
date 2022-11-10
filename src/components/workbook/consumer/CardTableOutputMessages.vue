@@ -1,25 +1,25 @@
 <template>
   <div class="q-py-md">
     <q-table
-      grid
-      title="Messages"
-      :rows="formattedEvents"
-      :columns="columns"
-      row-key="offset"
-      :filter="filter"
-      hide-header
-      no-data-label="No events"
-      separator="none"
-      v-model:pagination="pagination"
-      @request="onRequest"
-      :loading="loading"
+        grid
+        title="Messages"
+        :rows="formattedEvents"
+        :columns="columns"
+        row-key="offset"
+        :filter="filter"
+        hide-header
+        no-data-label="No events"
+        separator="none"
+        v-model:pagination="pagination"
+        @request="onRequest"
+        :loading="loading"
     >
       <template v-slot:top-right>
         <div class="fit row justify-end">
           <div class="q-pt-none q-pb-none q-mr-md col-3">
             <ArtifactTextFormatSelect
-              :text-format-artifact="textFormat"
-              v-on:textFormatChanged="onTextFormatChanged"
+                :text-format-artifact="textFormat"
+                v-on:textFormatChanged="onTextFormatChanged"
             />
           </div>
           <q-input dense debounce="300" v-model="filter" placeholder="Search" class="q-mr-md">
@@ -29,25 +29,26 @@
           </q-input>
           <div class="q-pt-none q-pb-none col-1">
             <q-input
-              class="q-pt-none q-pb-none"
-              v-model="timeOutInterval"
-              type="number"
-              style="max-width: 90px"
-              label="Refresh"
-              dense
-              :rules="[ val => val && val > 0 || 'Please type a valid value']"
-              :hide-hint="true"
+                class="q-pt-none q-pb-none"
+                v-model="timeOutInterval"
+                type="number"
+                style="max-width: 200px"
+                label="Refresh:"
+                dense
+                :rules="[ val => val && val > 0 || 'Invalid value']"
+                :hide-hint="true"
+                no-error-icon="true"
             />
           </div>
           <div class="q-pt-sm q-pb-none q-ml-none">
             <q-btn
-              flat
-              round
-              dense
-              icon="refresh"
-              class="q-ml-sm"
-              size="12px"
-              @click="onManualRequest"/>
+                flat
+                round
+                dense
+                icon="refresh"
+                class="q-ml-sm"
+                size="12px"
+                @click="onManualRequest"/>
           </div>
         </div>
       </template>
@@ -91,13 +92,13 @@
             <q-card-actions>
               <q-space/>
               <q-btn
-                color="grey"
-                flat
-                dense
-                label="show headers"
-                key="props.rowIndex"
-                :icon="props.expand ? 'keyboard_arrow_up' : 'keyboard_arrow_down'"
-                @click="props.expand = !props.expand"
+                  color="grey"
+                  flat
+                  dense
+                  label="show headers"
+                  key="props.rowIndex"
+                  :icon="props.expand ? 'keyboard_arrow_up' : 'keyboard_arrow_down'"
+                  @click="props.expand = !props.expand"
               />
             </q-card-actions>
 
@@ -121,16 +122,16 @@
 </template>
 
 <script lang="ts">
-import {computed, defineComponent, inject, onMounted, onUnmounted, PropType, ref, watch} from 'vue'
-import {IOutputMessageRow} from 'src/interfaces/IOutputMessageRow'
-import {syntaxHighlight} from 'src/global'
-import {WorkBookStatus} from 'src/enums/WorkBookStatus'
-import {IConsumedEvent} from 'src/interfaces/IConsumedEvent'
+import { computed, defineComponent, inject, onMounted, onUnmounted, PropType, ref, watch } from 'vue'
+import { IOutputMessageRow } from 'src/interfaces/IOutputMessageRow'
+import { syntaxHighlight } from 'src/global'
+import { WorkBookStatus } from 'src/enums/WorkBookStatus'
+import { IConsumedEvent } from 'src/interfaces/IConsumedEvent'
 import useOutputMessages from 'src/components/workbook/consumer/useOutputMessages'
-import Timeout = NodeJS.Timeout;
-import {IRequestOptions} from 'src/interfaces/workbooks/IRequestOptions'
-import {IArtifactTextFormatSelector} from 'src/interfaces/selectors/IArtifactTextFormatSelector'
-import {ArtifactTextFormat} from 'src/enums/ArtifactTextFormat'
+import Timeout = NodeJS.Timeout
+import { IRequestOptions } from 'src/interfaces/workbooks/IRequestOptions'
+import { IArtifactTextFormatSelector } from 'src/interfaces/selectors/IArtifactTextFormatSelector'
+import { ArtifactTextFormat } from 'src/enums/ArtifactTextFormat'
 import ArtifactTextFormatSelect from 'components/workbook/artifact/ArtifactTextFormatSelect.vue'
 
 export default defineComponent({
@@ -298,16 +299,21 @@ export default defineComponent({
 
 .jsoncolors ::v-deep .string
   color: green
+  white-space: normal
 
 .jsoncolors ::v-deep .number
   color: darkorange
+  white-space: normal
 
 .jsoncolors ::v-deep .boolean
   color: blue
+  white-space: normal
 
 .jsoncolors ::v-deep .null
   color: magenta
+  white-space: normal
 
 .jsoncolors ::v-deep .key
   color: red
+  white-space: normal
 </style>
