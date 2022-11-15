@@ -17,8 +17,8 @@ image::doc/images/Intro%202.png[]
 
 == Releases
 
-* Version 0.1.7:
-** Mac version: https://github.com/theam/plasmido/releases/download/v0.1.7/plasmido-darwin-v0.1.7.zip
+* Version 0.1.8:
+** Mac version: https://github.com/theam/plasmido/releases/download/v0.1.8/plasmido-darwin-v0.1.8.zip
 
 == Development
 
