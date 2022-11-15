@@ -300,20 +300,25 @@ export default defineComponent({
 .jsoncolors ::v-deep .string
   color: green
   white-space: normal
+  word-wrap: break-word
 
 .jsoncolors ::v-deep .number
   color: darkorange
   white-space: normal
+  word-wrap: break-word
 
 .jsoncolors ::v-deep .boolean
   color: blue
   white-space: normal
+  word-wrap: break-word
 
 .jsoncolors ::v-deep .null
   color: magenta
   white-space: normal
+  word-wrap: break-word
 
 .jsoncolors ::v-deep .key
   color: red
   white-space: normal
+  word-wrap: break-word
 </style>
